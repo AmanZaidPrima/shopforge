@@ -1,0 +1,35 @@
+<section class="product-detail-section">
+  <div class="container product-detail" x-data="{ qty: 1 }">
+    <div class="product-detail-img">
+      <img
+        src="<%= it.data.product.image %>"
+        alt="<%= it.data.product.title %>"
+        width="600"
+        height="600"
+        fetchpriority="high"
+      >
+    </div>
+    <div class="product-detail-info">
+      <h1 class="product-detail-title"><%= it.data.product.title %></h1>
+      <p class="product-detail-price">$<%= it.data.product.price %></p>
+      <p class="product-detail-desc"><%= it.data.product.description %></p>
+
+      <div class="product-detail-actions">
+        <div class="qty-picker">
+          <button class="qty-btn" @click="qty = Math.max(1, qty - 1)">−</button>
+          <span class="qty-val" x-text="qty">1</span>
+          <button class="qty-btn" @click="qty++">+</button>
+        </div>
+        <button
+          class="btn"
+          hx-post="/cart/add"
+          hx-vals='{"variantId": "<%= it.data.product.id %>"}'
+          hx-swap="none"
+          hx-on::after-request="Alpine.store('cart').count++"
+        >Add to Cart</button>
+      </div>
+
+      <a href="/" class="back-link">← Back to shop</a>
+    </div>
+  </div>
+</section>

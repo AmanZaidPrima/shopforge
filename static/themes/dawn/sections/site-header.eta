@@ -1,0 +1,13 @@
+<header class="site-header" style="--brand: <%= it.theme.brand_color %>">
+  <div class="container header-inner">
+    <a href="/" class="logo"><%= it.store.name %></a>
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/collections/all">Shop</a>
+    </nav>
+    <a href="/cart" class="cart-link">
+      Cart
+      <span class="cart-count" x-data x-text="$store.cart.count">0</span>
+    </a>
+  </div>
+</header>

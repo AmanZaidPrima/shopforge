@@ -1,0 +1,41 @@
+<section class="product-grid-section">
+  <div class="container">
+    <h2 class="section-title">All Products</h2>
+    <div class="product-grid" style="--cols: <%= it.props.columns %>">
+      <% for (const product of it.data.products) { %>
+      <article class="product-card" x-data="{ qty: 1 }">
+        <a href="/products/<%= product.handle %>" class="product-img-link">
+          <img
+            src="<%= product.image %>"
+            alt="<%= product.title %>"
+            class="product-img"
+            loading="lazy"
+            width="400"
+            height="400"
+          >
+        </a>
+        <div class="product-info">
+          <a href="/products/<%= product.handle %>">
+            <h3 class="product-title"><%= product.title %></h3>
+          </a>
+          <p class="product-price">$<%= product.price %></p>
+        </div>
+        <div class="product-actions">
+          <div class="qty-picker">
+            <button class="qty-btn" @click="qty = Math.max(1, qty - 1)">−</button>
+            <span class="qty-val" x-text="qty">1</span>
+            <button class="qty-btn" @click="qty++">+</button>
+          </div>
+          <button
+            class="btn btn-sm"
+            hx-post="/cart/add"
+            hx-vals='{"variantId": "<%= product.id %>"}'
+            hx-swap="none"
+            hx-on::after-request="Alpine.store('cart').count++"
+          >Add to Cart</button>
+        </div>
+      </article>
+      <% } %>
+    </div>
+  </div>
+</section>

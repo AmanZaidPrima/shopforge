@@ -1,0 +1,7 @@
+<section class="hero-banner" style="--brand: <%= it.theme.brand_color %>; --radius: <%= it.theme.border_radius %>px">
+  <div class="container hero-inner">
+    <h1 class="hero-heading"><%= it.props.heading %></h1>
+    <p class="hero-sub"><%= it.props.subheading %></p>
+    <a href="<%= it.props.ctaHref %>" class="btn"><%= it.props.ctaText %></a>
+  </div>
+</section>

@@ -1,0 +1,11 @@
+<footer class="site-footer" style="--brand: <%= it.theme.brand_color %>">
+  <div class="container footer-inner">
+    <span class="footer-name"><%= it.store.name %></span>
+    <nav class="footer-nav">
+      <a href="/">Home</a>
+      <a href="/collections/all">Shop</a>
+      <a href="/pages/about">About</a>
+    </nav>
+    <span class="footer-copy">© <%= new Date().getFullYear() %> <%= it.store.name %></span>
+  </div>
+</footer>

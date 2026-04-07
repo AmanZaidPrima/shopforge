@@ -1,7 +1,2 @@
-import { Hono } from "hono";
-
-const app = new Hono();
-
-app.get("/", (c) => c.json({ message: "storefront-builder-eta" }));
-
-export default app;
+// Entry point — app lives in src/index.ts
+export { default } from "./src/index.ts";
