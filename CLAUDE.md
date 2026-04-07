@@ -104,3 +104,34 @@ bun --hot ./index.ts
 ```
 
 For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
+
+---
+
+## Project: High-Performance Storefront Platform
+
+**Full architecture reference:** `docs/architecture.md`
+
+### Stack
+- **Runtime:** Bun + Hono (same codebase targets Bun dev server and Cloudflare Workers)
+- **Templates:** Eta — compile-once, cache in `Map<slug, fn>`, ~0.005ms/render
+- **Frontend:** Alpine.js (7KB) for local state + HTMX (14KB) for partial updates — no build step
+- **Storage:** Cloudflare KV for layout JSON and store settings; Postgres (`Bun.sql`) for widgets/pages
+- **Builder UI:** Separate Next.js app (not in this repo)
+
+### Core patterns
+- **Multi-tenancy by hostname:** `hostname → store → layout JSON → render`
+- **Widget model:** each widget has an Eta template (in DB), a JSON schema (for builder), and a data resolver function
+- **SSR pipeline:** Hono worker → fetch store + layout from KV → `Promise.all` data per slot → stream HTML via `TransformStream`
+- **HTMX navigation:** `hx-boost="true"` on `<body>` for SPA-like nav; `/fragments/:widget` routes for targeted updates (cart, stock)
+- **Alpine scope:** `x-data` per widget (isolated), `Alpine.store('cart', ...)` for shared state
+
+### KV key structure
+```
+stores:{hostname}           → store settings JSON
+layouts:{hostname}:{route}  → page layout JSON (slots → widgets)
+```
+
+### Performance targets
+- TTFB: 30–80ms (vs Shopify 300–800ms)
+- Total JS: ~21KB (Alpine + HTMX only)
+- No hydration, no framework bundle, SSR-first
