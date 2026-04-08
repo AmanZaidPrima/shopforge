@@ -1,7 +1,7 @@
 {
   "name": "shopforge",
   "private": true,
-  "workspaces": ["apps/server", "apps/presentation-api", "apps/store-api"],
+  "workspaces": ["apps/server", "apps/presentation-api", "apps/store-api", "apps/editor"],
   "scripts": {
     "dev": "bun run --filter './apps/*' dev"
   }
