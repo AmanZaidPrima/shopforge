@@ -1,4 +1,13 @@
-<footer class="site-footer" style="--brand: <%= it.theme.brand_color %>">
+<style>
+.site-footer { border-top:1px solid var(--border); background:var(--surface); padding:2rem 0; margin-top:4rem; }
+.footer-inner { display:flex; align-items:center; gap:2rem; flex-wrap:wrap; }
+.footer-name { font-weight:700; font-size:.9rem; margin-right:auto; }
+.footer-nav { display:flex; gap:1.25rem; }
+.footer-nav a { font-size:.85rem; color:var(--muted); transition:color .15s; }
+.footer-nav a:hover { color:var(--text); }
+.footer-copy { font-size:.8rem; color:var(--muted); }
+</style>
+<footer class="site-footer">
   <div class="container footer-inner">
     <span class="footer-name"><%= it.store.name %></span>
     <nav class="footer-nav">

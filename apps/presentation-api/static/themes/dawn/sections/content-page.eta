@@ -1,3 +1,8 @@
+<style>
+.content-page-section { padding:5rem 0; }
+.content-page-title { font-size:2rem; font-weight:800; letter-spacing:-.03em; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
+.content-page-body { max-width:640px; font-size:.975rem; color:var(--muted); line-height:1.8; }
+</style>
 <section class="content-page-section">
   <div class="container">
     <h1 class="content-page-title"><%= it.data.title %></h1>

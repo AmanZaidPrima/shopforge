@@ -1,4 +1,11 @@
-<section class="mn-hero" style="--brand: <%= it.theme.brand_color %>; --radius: <%= it.theme.border_radius %>px">
+<style>
+.mn-hero { padding:5rem 0; background:var(--surface); border-bottom:1px solid var(--border); text-align:center; }
+.mn-hero-inner { max-width:560px; margin:0 auto; }
+.mn-hero-eyebrow { font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--brand); margin-bottom:1rem; }
+.mn-hero-heading { font-size:clamp(2rem,4.5vw,3.5rem); font-weight:700; letter-spacing:-.03em; line-height:1.1; margin-bottom:1rem; }
+.mn-hero-sub { font-size:1rem; color:var(--muted); margin-bottom:2rem; }
+</style>
+<section class="mn-hero">
   <div class="mn-container">
     <div class="mn-hero-inner">
       <% if (it.props.eyebrow) { %>

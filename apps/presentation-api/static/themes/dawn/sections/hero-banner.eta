@@ -1,4 +1,11 @@
-<section class="hero-banner" style="--brand: <%= it.theme.brand_color %>; --radius: <%= it.theme.border_radius %>px">
+<style>
+.hero-banner { background:var(--brand); color:#fff; padding:6rem 0; }
+.hero-inner { max-width:640px; }
+.hero-heading { font-size:clamp(2.5rem,5vw,4rem); font-weight:800; letter-spacing:-.03em; line-height:1.1; margin-bottom:1rem; }
+.hero-sub { font-size:1.1rem; opacity:.75; margin-bottom:2rem; }
+.hero-banner .btn { background:#fff; color:var(--brand); }
+</style>
+<section class="hero-banner">
   <div class="container hero-inner">
     <h1 class="hero-heading"><%= it.props.heading %></h1>
     <p class="hero-sub"><%= it.props.subheading %></p>

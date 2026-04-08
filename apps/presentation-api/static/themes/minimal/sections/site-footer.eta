@@ -1,4 +1,13 @@
-<footer class="mn-footer" style="--brand: <%= it.theme.brand_color %>">
+<style>
+.mn-footer { border-top:1px solid var(--border); background:var(--surface); padding:2rem 0; margin-top:4rem; }
+.mn-footer-inner { display:flex; align-items:center; gap:2rem; flex-wrap:wrap; }
+.mn-footer-name { font-weight:700; font-size:.875rem; color:var(--brand); margin-right:auto; }
+.mn-footer-nav { display:flex; gap:1.25rem; }
+.mn-footer-nav a { font-size:.825rem; color:var(--muted); transition:color .15s; }
+.mn-footer-nav a:hover { color:var(--brand); }
+.mn-footer-copy { font-size:.8rem; color:var(--muted); }
+</style>
+<footer class="mn-footer">
   <div class="mn-container mn-footer-inner">
     <span class="mn-footer-name"><%= it.store.name %></span>
     <nav class="mn-footer-nav">

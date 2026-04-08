@@ -1,3 +1,29 @@
+<style>
+.collection-section { padding:4rem 0; }
+.collection-toolbar { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:2rem; flex-wrap:wrap; }
+.section-title { font-size:1.5rem; font-weight:700; letter-spacing:-.02em; }
+.collection-controls { display:flex; gap:.75rem; }
+.filter-input,.sort-select { padding:.5rem .9rem; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg); font-size:.85rem; color:var(--text); outline:none; transition:border-color .15s; }
+.filter-input:focus,.sort-select:focus { border-color:var(--brand); }
+.filter-input { min-width:200px; }
+.product-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+@media (max-width:900px) { .product-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:600px) { .product-grid { grid-template-columns:1fr; } }
+.product-card { border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; background:var(--bg); box-shadow:var(--shadow); transition:box-shadow .2s,transform .2s; }
+.product-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+.product-img-link { display:block; overflow:hidden; aspect-ratio:1; }
+.product-img { width:100%; height:100%; object-fit:cover; transition:transform .3s; }
+.product-card:hover .product-img { transform:scale(1.04); }
+.product-info { padding:1rem 1rem .5rem; }
+.product-title { font-size:.95rem; font-weight:600; margin-bottom:.25rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.product-price { font-size:.9rem; color:var(--muted); font-weight:500; }
+.product-actions { display:flex; align-items:center; gap:.75rem; padding:.75rem 1rem 1rem; }
+.qty-picker { display:flex; align-items:center; gap:.5rem; border:1px solid var(--border); border-radius:var(--radius); padding:.25rem .5rem; }
+.qty-btn { background:none; border:none; font-size:1rem; cursor:pointer; padding:0 .25rem; color:var(--text); transition:opacity .15s; }
+.qty-btn:hover { opacity:.6; }
+.qty-val { min-width:1.25rem; text-align:center; font-size:.875rem; font-weight:600; }
+.collection-empty { grid-column:1/-1; text-align:center; color:var(--muted); padding:3rem 0; font-size:.95rem; }
+</style>
 <script id="dawn-products-data" type="application/json">
   <%~ JSON.stringify(it.data.products) %>
 </script>
@@ -7,13 +33,7 @@
     <div class="collection-toolbar">
       <h1 class="section-title">All Products</h1>
       <div class="collection-controls">
-        <input
-          type="search"
-          class="filter-input"
-          placeholder="Search products…"
-          x-model="search"
-          @input.debounce.200ms="applyFilter()"
-        >
+        <input type="search" class="filter-input" placeholder="Search products…" x-model="search" @input.debounce.200ms="applyFilter()">
         <select class="sort-select" x-model="sortBy" @change="applyFilter()">
           <option value="default">Sort: Default</option>
           <option value="price-asc">Price: Low to High</option>
@@ -22,19 +42,11 @@
         </select>
       </div>
     </div>
-
-    <div class="product-grid" :style="`--cols: 3`">
+    <div class="product-grid">
       <template x-for="product in filtered" :key="product.id">
         <article class="product-card" x-data="{ qty: 1 }">
           <a :href="`/products/${product.handle}`" class="product-img-link">
-            <img
-              :src="product.image"
-              :alt="product.title"
-              class="product-img"
-              loading="lazy"
-              width="400"
-              height="400"
-            >
+            <img :src="product.image" :alt="product.title" class="product-img" loading="lazy" width="400" height="400">
           </a>
           <div class="product-info">
             <a :href="`/products/${product.handle}`">
@@ -48,14 +60,10 @@
               <span class="qty-val" x-text="qty">1</span>
               <button class="qty-btn" @click="qty++">+</button>
             </div>
-            <button
-              class="btn btn-sm"
-              @click="addToCart(product, qty)"
-            >Add to Cart</button>
+            <button class="btn btn-sm" @click="addToCart(product, qty)">Add to Cart</button>
           </div>
         </article>
       </template>
-
       <template x-if="filtered.length === 0">
         <p class="collection-empty">No products match your search.</p>
       </template>
@@ -67,26 +75,17 @@
   function dawnCollectionFilter() {
     const all = JSON.parse(document.getElementById('dawn-products-data').textContent);
     return {
-      search: '',
-      sortBy: 'default',
-      filtered: all,
+      search: '', sortBy: 'default', filtered: all,
       applyFilter() {
-        let result = all.filter(p =>
-          p.title.toLowerCase().includes(this.search.toLowerCase())
-        );
+        let result = all.filter(p => p.title.toLowerCase().includes(this.search.toLowerCase()));
         if (this.sortBy === 'price-asc')  result.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
         if (this.sortBy === 'price-desc') result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
         if (this.sortBy === 'name-asc')   result.sort((a, b) => a.title.localeCompare(b.title));
         this.filtered = result;
       },
       addToCart(product, qty) {
-        fetch('/cart/add', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ variantId: product.id, qty }),
-        }).then(() => {
-          Alpine.store('cart').count += qty;
-        });
+        fetch('/cart/add', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ variantId: product.id, qty }) })
+          .then(() => Alpine.store('cart').count += qty);
       },
     };
   }

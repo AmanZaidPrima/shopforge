@@ -1,4 +1,16 @@
-<header class="mn-header" style="--brand: <%= it.theme.brand_color %>">
+<style>
+.mn-header { position:sticky; top:0; z-index:100; background:var(--bg); border-bottom:1px solid var(--border); }
+.mn-header-inner { display:flex; align-items:center; gap:2rem; height:60px; }
+.mn-logo { font-size:1rem; font-weight:700; letter-spacing:-.02em; color:var(--brand); flex-shrink:0; }
+.mn-nav { display:flex; gap:1.5rem; margin-right:auto; }
+.mn-nav a { font-size:.875rem; color:var(--muted); transition:color .15s; position:relative; }
+.mn-nav a::after { content:''; position:absolute; bottom:-2px; left:0; width:0; height:2px; background:var(--brand); transition:width .2s; }
+.mn-nav a:hover { color:var(--text); }
+.mn-nav a:hover::after { width:100%; }
+.mn-cart-link { display:flex; align-items:center; gap:.4rem; font-size:.875rem; font-weight:600; color:var(--brand); }
+.mn-cart-badge { display:inline-flex; align-items:center; justify-content:center; min-width:1.3rem; height:1.3rem; padding:0 .25rem; background:var(--brand); color:#fff; border-radius:9999px; font-size:.7rem; font-weight:700; }
+</style>
+<header class="mn-header">
   <div class="mn-container mn-header-inner">
     <a href="/" class="mn-logo"><%= it.store.name %></a>
     <nav class="mn-nav">

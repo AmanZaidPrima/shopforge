@@ -1,3 +1,24 @@
+<style>
+.product-grid-section { padding:4rem 0; }
+.section-title { font-size:1.5rem; font-weight:700; letter-spacing:-.02em; margin-bottom:2rem; }
+.product-grid { display:grid; grid-template-columns:repeat(var(--cols,3),1fr); gap:1.5rem; }
+@media (max-width:900px) { .product-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:600px) { .product-grid { grid-template-columns:1fr; } }
+.product-card { border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; background:var(--bg); box-shadow:var(--shadow); transition:box-shadow .2s,transform .2s; }
+.product-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+.product-img-link { display:block; overflow:hidden; aspect-ratio:1; }
+.product-img { width:100%; height:100%; object-fit:cover; transition:transform .3s; }
+.product-card:hover .product-img { transform:scale(1.04); }
+.product-info { padding:1rem 1rem .5rem; }
+.product-title { font-size:.95rem; font-weight:600; margin-bottom:.25rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.product-title:hover { text-decoration:underline; }
+.product-price { font-size:.9rem; color:var(--muted); font-weight:500; }
+.product-actions { display:flex; align-items:center; gap:.75rem; padding:.75rem 1rem 1rem; }
+.qty-picker { display:flex; align-items:center; gap:.5rem; border:1px solid var(--border); border-radius:var(--radius); padding:.25rem .5rem; }
+.qty-btn { background:none; border:none; font-size:1rem; line-height:1; cursor:pointer; padding:0 .25rem; color:var(--text); transition:opacity .15s; }
+.qty-btn:hover { opacity:.6; }
+.qty-val { min-width:1.25rem; text-align:center; font-size:.875rem; font-weight:600; }
+</style>
 <section class="product-grid-section">
   <div class="container">
     <h2 class="section-title">All Products</h2>
@@ -5,14 +26,7 @@
       <% for (const product of it.data.products) { %>
       <article class="product-card" x-data="{ qty: 1 }">
         <a href="/products/<%= product.handle %>" class="product-img-link">
-          <img
-            src="<%= product.image %>"
-            alt="<%= product.title %>"
-            class="product-img"
-            loading="lazy"
-            width="400"
-            height="400"
-          >
+          <img src="<%= product.image %>" alt="<%= product.title %>" class="product-img" loading="lazy" width="400" height="400">
         </a>
         <div class="product-info">
           <a href="/products/<%= product.handle %>">
@@ -26,13 +40,7 @@
             <span class="qty-val" x-text="qty">1</span>
             <button class="qty-btn" @click="qty++">+</button>
           </div>
-          <button
-            class="btn btn-sm"
-            hx-post="/cart/add"
-            hx-vals='{"variantId": "<%= product.id %>"}'
-            hx-swap="none"
-            hx-on::after-request="Alpine.store('cart').count++"
-          >Add to Cart</button>
+          <button class="btn btn-sm" hx-post="/cart/add" hx-vals='{"variantId": "<%= product.id %>"}' hx-swap="none" hx-on::after-request="Alpine.store('cart').count++">Add to Cart</button>
         </div>
       </article>
       <% } %>

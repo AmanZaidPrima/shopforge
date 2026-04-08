@@ -1,14 +1,21 @@
-<section class="mn-cart-section" style="--brand: <%= it.theme.brand_color %>">
+<style>
+.mn-cart-section { padding:4rem 0; }
+.mn-cart-title { font-size:1.75rem; font-weight:700; letter-spacing:-.03em; margin-bottom:2rem; }
+.mn-cart-empty { text-align:center; padding:3rem 0; }
+.mn-cart-empty-msg { font-size:1rem; color:var(--muted); margin-bottom:1.5rem; }
+.mn-cart-summary { font-size:1rem; color:var(--text); margin-bottom:.5rem; }
+.mn-cart-note { font-size:.85rem; color:var(--muted); margin-bottom:1.5rem; }
+.mn-cart-actions { display:flex; gap:1rem; }
+</style>
+<section class="mn-cart-section">
   <div class="mn-container" x-data>
     <h1 class="mn-cart-title">Your Cart</h1>
-
     <template x-if="$store.cart.count === 0">
       <div class="mn-cart-empty">
         <p class="mn-cart-empty-msg">Your cart is empty.</p>
         <a href="/collections/all" class="mn-btn">Start Shopping</a>
       </div>
     </template>
-
     <template x-if="$store.cart.count > 0">
       <div>
         <p class="mn-cart-summary" x-text="`${$store.cart.count} item(s) in your cart`"></p>

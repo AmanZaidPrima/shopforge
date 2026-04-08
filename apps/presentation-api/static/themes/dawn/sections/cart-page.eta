@@ -1,16 +1,23 @@
+<style>
+.cart-page-section { padding:4rem 0; }
+.cart-page-title { font-size:2rem; font-weight:800; letter-spacing:-.03em; margin-bottom:2rem; }
+.cart-empty { text-align:center; padding:2rem 0; }
+.cart-empty-msg { font-size:1rem; color:var(--muted); margin-bottom:1.5rem; }
+.cart-summary { font-size:1rem; margin-bottom:.5rem; }
+.cart-note { font-size:.875rem; color:var(--muted); margin-bottom:1.5rem; }
+.cart-actions { display:flex; gap:1rem; }
+</style>
 <section class="cart-page-section">
   <div class="container" x-data>
     <h1 class="cart-page-title">Your Cart</h1>
-
     <template x-if="$store.cart.count === 0">
       <div class="cart-empty">
         <p class="cart-empty-msg">Your cart is empty.</p>
         <a href="/collections/all" class="btn">Continue Shopping</a>
       </div>
     </template>
-
     <template x-if="$store.cart.count > 0">
-      <div class="cart-has-items">
+      <div>
         <p class="cart-summary" x-text="`${$store.cart.count} item(s) added to your cart.`"></p>
         <p class="cart-note">Full cart management coming soon.</p>
         <div class="cart-actions">
