@@ -1,8 +1,9 @@
-import type { PageLayout, StoreTheme, ThemeSchema } from "../types.ts";
+import type { PageLayout, Store, StoreTheme, ThemeSchema } from "../types.ts";
 
-// Phase 1: in-memory storage seeded from fixtures.
+// Phase 1: in-memory storage.
 // Phase 2: swap implementations to read/write Cloudflare KV.
 // Interface mirrors KV key structure:
+//   stores:{hostname}               → Store record
 //   stores:{store_id}:active_theme  → StoreTheme
 //   themes:{theme_id}               → ThemeSchema
 
@@ -31,9 +32,19 @@ export function listThemes(): string[] {
   return [...AVAILABLE_THEMES];
 }
 
+// -- Store records (in-memory; Phase 2: KV `stores:{hostname}`) --
+
+const storesByHostname = new Map<string, Store>([
+  ["localhost",         { id: "store-1", name: "Dawn Demo Store",    hostname: "localhost" }],
+  ["minimal.localhost", { id: "store-2", name: "Minimal Demo Store", hostname: "minimal.localhost" }],
+]);
+
+export function getStoreByHostname(hostname: string): Store | null {
+  return storesByHostname.get(hostname) ?? null;
+}
+
 // -- Store theme (in-memory; Phase 2: KV `stores:{store_id}:active_theme`) --
 
-// Seeded from server fixtures so both apps share the same starting state.
 const storeThemes = new Map<string, StoreTheme>([
   [
     "store-1",

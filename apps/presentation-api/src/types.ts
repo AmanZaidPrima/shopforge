@@ -21,6 +21,12 @@ export type ThemeSchema = {
   default_layouts: Record<string, PageLayout>;
 };
 
+export type Store = {
+  id: string;
+  name: string;
+  hostname: string;
+};
+
 // Per-store theme config — mirrors KV key `stores:{store_id}:active_theme`
 export type StoreTheme = {
   theme_id: string;
