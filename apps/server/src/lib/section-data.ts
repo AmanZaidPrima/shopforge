@@ -1,5 +1,6 @@
-import { products } from "../fixtures/products.ts";
 import type { RenderContext } from "../types.ts";
+
+const STORE_API = process.env.STORE_API_URL ?? "http://localhost:3002";
 
 type Resolver = (props: Record<string, unknown>, ctx: RenderContext) => Promise<unknown>;
 
@@ -10,38 +11,35 @@ const resolvers: Record<string, Resolver> = {
 
   "hero-banner": async () => ({}),
 
-  "product-grid": async (props) => ({
-    products: products.slice(0, Number(props.limit) || 6),
-  }),
-
-  // Product detail page section
-  "product-card": async (_, { routeParams }) => ({
-    product: products.find((p) => p.handle === routeParams.handle) ?? products[0],
-  }),
-
-  // Collection page with Alpine-powered client-side filter
-  "collection-filter": async (props) => ({
-    products: products.slice(0, Number(props.limit) || 12),
-  }),
-
-  // Cart page — state is entirely client-side (Alpine.store)
   "cart-page": async () => ({}),
 
-  // Generic content page (about, contact, etc.)
-  "content-page": async (_, ctx) => {
-    const pages: Record<string, { title: string; content: string }> = {
-      about: {
-        title: "About Us",
-        content:
-          "We believe in the beauty of simplicity. Our carefully curated collection brings you timeless essentials that stand the test of time.",
-      },
-      contact: {
-        title: "Contact",
-        content: "Have a question? Reach us at hello@store.com. We respond within 24 hours.",
-      },
+  "product-grid": async (props, { store }) => {
+    const limit = Number(props.limit) || 6;
+    const res = await fetch(`${STORE_API}/stores/${store.id}/products?limit=${limit}`);
+    return { products: res.ok ? await res.json() : [] };
+  },
+
+  "product-card": async (_, { store, routeParams }) => {
+    const res = await fetch(`${STORE_API}/stores/${store.id}/products/${routeParams.handle}`);
+    return { product: res.ok ? await res.json() : null };
+  },
+
+  "collection-filter": async (props, { store, routeParams }) => {
+    const handle = routeParams.handle ?? "all";
+    const limit = Number(props.limit) || 12;
+    const [colRes, prodRes] = await Promise.all([
+      fetch(`${STORE_API}/stores/${store.id}/collections/${handle}`),
+      fetch(`${STORE_API}/stores/${store.id}/collections/${handle}/products?limit=${limit}`),
+    ]);
+    return {
+      collection: colRes.ok ? await colRes.json() : null,
+      products: prodRes.ok ? await prodRes.json() : [],
     };
-    const handle = ctx.routeParams.handle ?? "about";
-    return pages[handle] ?? { title: "Page Not Found", content: "This page does not exist." };
+  },
+
+  "content-page": async (_, { store, routeParams }) => {
+    const res = await fetch(`${STORE_API}/stores/${store.id}/pages/${routeParams.handle ?? "about"}`);
+    return res.ok ? await res.json() : { title: "Page Not Found", content: "This page does not exist." };
   },
 };
 

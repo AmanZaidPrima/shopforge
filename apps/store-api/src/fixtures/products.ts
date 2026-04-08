@@ -1,13 +1,6 @@
-export type Product = {
-  id: string;
-  handle: string;
-  title: string;
-  price: string;
-  image: string;
-  description: string;
-  variants: { id: string; title: string }[];
-};
+import type { Product } from "../types.ts";
 
+// Phase 1: fixture data. Phase 2: replace with DB queries.
 export const products: Product[] = [
   {
     id: "prod-1",
