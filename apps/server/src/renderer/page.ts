@@ -15,7 +15,7 @@ export async function renderPage(
   const store = c.get("store");
   const themeSettings = c.get("themeSettings");
 
-  const layout = await resolveLayout(themeSettings.id, routeKey, store.name);
+  const layout = await resolveLayout(store.id, routeKey, store.name);
   if (!layout) return c.text("Page not found", 404);
 
   const ctx: RenderContext = { store, theme: themeSettings, routeParams };
