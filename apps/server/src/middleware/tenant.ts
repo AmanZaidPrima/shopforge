@@ -13,21 +13,33 @@ const FALLBACK_THEME: ThemeSettings = {
 export const tenantMiddleware: MiddlewareHandler<AppEnv> = async (c, next) => {
   const hostname = new URL(c.req.url).hostname;
 
-  const res = await fetch(`${API_BASE}/stores/resolve/${hostname}`).catch(() => null);
-  const body = res?.ok ? await res.json() as {
-    store: { id: string; name: string; hostname: string };
-    storeTheme: { theme_id: string; settings: Omit<ThemeSettings, "id"> } | null;
-  } : null;
-
-  if (!body) {
-    return c.json({ error: "Store not found" }, 404);
+  let res: Response | null = null;
+  try {
+    res = await fetch(`${API_BASE}/stores/resolve/${hostname}`);
+  } catch {
+    // Presentation API unreachable — likely not running in dev
+    console.error(`[tenant] presentation-api unreachable at ${API_BASE}. Run apps/presentation-api.`);
+    return c.json({ error: "Presentation API unavailable" }, 503);
   }
 
-  const themeSettings: ThemeSettings = body.storeTheme
-    ? { id: body.storeTheme.theme_id, ...body.storeTheme.settings }
+  if (res.status === 404) {
+    return c.json({ error: `No store configured for hostname: ${hostname}` }, 404);
+  }
+
+  if (!res.ok) {
+    return c.json({ error: "Failed to resolve store" }, 502);
+  }
+
+  const { store, storeTheme } = await res.json() as {
+    store: { id: string; name: string; hostname: string };
+    storeTheme: { theme_id: string; settings: Omit<ThemeSettings, "id"> } | null;
+  };
+
+  const themeSettings: ThemeSettings = storeTheme
+    ? { id: storeTheme.theme_id, ...storeTheme.settings }
     : FALLBACK_THEME;
 
-  c.set("store", body.store);
+  c.set("store", store);
   c.set("themeSettings", themeSettings);
   await next();
 };
