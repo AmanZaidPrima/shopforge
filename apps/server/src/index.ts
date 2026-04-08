@@ -10,12 +10,6 @@ const app = new Hono<AppEnv>();
 app.use("*", tenantMiddleware);
 app.use("*", htmxMiddleware);
 
-// Proxy theme static assets (CSS, templates) to apps/api
-const API_BASE = process.env.API_BASE_URL ?? "http://localhost:3001";
-app.use("/static/themes/*", (c) =>
-  fetch(`${API_BASE}${new URL(c.req.url).pathname}`)
-);
-
 // Storefront routes
 app.get("/favicon.ico", (c) => c.body(null, 204));
 app.get("/", (c) => renderPage(c, "home"));

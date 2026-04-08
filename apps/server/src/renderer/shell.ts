@@ -1,5 +1,7 @@
 import type { Store, ThemeSettings } from "../types.ts";
 
+const STATIC_BASE = process.env.STATIC_BASE_URL ?? "http://localhost:3001";
+
 export function shellTop(store: Store, theme: ThemeSettings, title: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -7,7 +9,7 @@ export function shellTop(store: Store, theme: ThemeSettings, title: string): str
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
-  <link rel="stylesheet" href="/static/themes/${theme.id}/theme.css">
+  <link rel="stylesheet" href="${STATIC_BASE}/static/themes/${theme.id}/theme.css">
   <script>
     document.addEventListener('alpine:init', () => {
       Alpine.store('cart', { count: 0 });
