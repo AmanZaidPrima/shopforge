@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
+import { getStoreByHostname, getStoreTheme } from "./storage/index.ts";
 import themes from "./routes/themes.ts";
-import stores from "./routes/stores.ts";
 import store from "./routes/store.ts";
 import layouts from "./routes/layouts.ts";
 
@@ -13,11 +13,20 @@ app.use("/static/themes/*", serveStatic({ root: "./" }));
 // Health check
 app.get("/health", (c) => c.json({ ok: true }));
 
+// Store resolution — explicit static route registered before any parameterized /stores/* routes
+// Returns store record + active theme in one call for server tenant middleware
+app.get("/stores/resolve/:hostname", async (c) => {
+  const hostname = c.req.param("hostname")!;
+  const store = getStoreByHostname(hostname);
+
+  if (!store) return c.json({ error: "Store not found" }, 404);
+
+  const storeTheme = await getStoreTheme(store.id);
+  return c.json({ store, storeTheme });
+});
+
 // Platform theme catalogue — public metadata
 app.route("/themes", themes);
-
-// Store resolution — used internally by server tenant middleware
-app.route("/stores", stores);
 
 // Store-scoped presentation routes — storeId comes from URL path
 app.route("/stores/:storeId/theme", store);
