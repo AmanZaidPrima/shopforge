@@ -28,3 +28,21 @@ export type RenderContext = {
   theme: ThemeSettings;
   routeParams: Record<string, string>;
 };
+
+export type ThemeSchema = {
+  settings_schema: Record<string, { type: string; default: unknown; label: string }>;
+  default_layouts: Record<string, PageLayout>;
+};
+
+export type StoreRecord = {
+  store: Store;
+  themeSettings: ThemeSettings;
+};
+
+export type AppEnv = {
+  Variables: {
+    isHtmx: boolean;
+    store: Store;
+    themeSettings: ThemeSettings;
+  };
+};

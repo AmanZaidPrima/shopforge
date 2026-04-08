@@ -1,0 +1,22 @@
+<section class="cart-page-section">
+  <div class="container" x-data>
+    <h1 class="cart-page-title">Your Cart</h1>
+
+    <template x-if="$store.cart.count === 0">
+      <div class="cart-empty">
+        <p class="cart-empty-msg">Your cart is empty.</p>
+        <a href="/collections/all" class="btn">Continue Shopping</a>
+      </div>
+    </template>
+
+    <template x-if="$store.cart.count > 0">
+      <div class="cart-has-items">
+        <p class="cart-summary" x-text="`${$store.cart.count} item(s) added to your cart.`"></p>
+        <p class="cart-note">Full cart management coming soon.</p>
+        <div class="cart-actions">
+          <a href="/collections/all" class="btn btn-outline">Continue Shopping</a>
+        </div>
+      </div>
+    </template>
+  </div>
+</section>

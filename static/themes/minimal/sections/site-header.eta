@@ -1,0 +1,14 @@
+<header class="mn-header" style="--brand: <%= it.theme.brand_color %>">
+  <div class="mn-container mn-header-inner">
+    <a href="/" class="mn-logo"><%= it.store.name %></a>
+    <nav class="mn-nav">
+      <a href="/">Home</a>
+      <a href="/collections/all">Shop</a>
+      <a href="/pages/about">About</a>
+    </nav>
+    <a href="/cart" class="mn-cart-link">
+      Cart
+      <span class="mn-cart-badge" x-data x-text="$store.cart.count">0</span>
+    </a>
+  </div>
+</header>

@@ -1,0 +1,93 @@
+<script id="dawn-products-data" type="application/json">
+  <%~ JSON.stringify(it.data.products) %>
+</script>
+
+<section class="collection-section" x-data="dawnCollectionFilter()">
+  <div class="container">
+    <div class="collection-toolbar">
+      <h1 class="section-title">All Products</h1>
+      <div class="collection-controls">
+        <input
+          type="search"
+          class="filter-input"
+          placeholder="Search products…"
+          x-model="search"
+          @input.debounce.200ms="applyFilter()"
+        >
+        <select class="sort-select" x-model="sortBy" @change="applyFilter()">
+          <option value="default">Sort: Default</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="name-asc">Name: A–Z</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="product-grid" :style="`--cols: 3`">
+      <template x-for="product in filtered" :key="product.id">
+        <article class="product-card" x-data="{ qty: 1 }">
+          <a :href="`/products/${product.handle}`" class="product-img-link">
+            <img
+              :src="product.image"
+              :alt="product.title"
+              class="product-img"
+              loading="lazy"
+              width="400"
+              height="400"
+            >
+          </a>
+          <div class="product-info">
+            <a :href="`/products/${product.handle}`">
+              <h3 class="product-title" x-text="product.title"></h3>
+            </a>
+            <p class="product-price" x-text="`$${product.price}`"></p>
+          </div>
+          <div class="product-actions">
+            <div class="qty-picker">
+              <button class="qty-btn" @click="qty = Math.max(1, qty - 1)">−</button>
+              <span class="qty-val" x-text="qty">1</span>
+              <button class="qty-btn" @click="qty++">+</button>
+            </div>
+            <button
+              class="btn btn-sm"
+              @click="addToCart(product, qty)"
+            >Add to Cart</button>
+          </div>
+        </article>
+      </template>
+
+      <template x-if="filtered.length === 0">
+        <p class="collection-empty">No products match your search.</p>
+      </template>
+    </div>
+  </div>
+</section>
+
+<script>
+  function dawnCollectionFilter() {
+    const all = JSON.parse(document.getElementById('dawn-products-data').textContent);
+    return {
+      search: '',
+      sortBy: 'default',
+      filtered: all,
+      applyFilter() {
+        let result = all.filter(p =>
+          p.title.toLowerCase().includes(this.search.toLowerCase())
+        );
+        if (this.sortBy === 'price-asc')  result.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+        if (this.sortBy === 'price-desc') result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+        if (this.sortBy === 'name-asc')   result.sort((a, b) => a.title.localeCompare(b.title));
+        this.filtered = result;
+      },
+      addToCart(product, qty) {
+        fetch('/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ variantId: product.id, qty }),
+        }).then(() => {
+          Alpine.store('cart').count += qty;
+        });
+      },
+    };
+  }
+</script>

@@ -1,0 +1,22 @@
+<section class="mn-cart-section" style="--brand: <%= it.theme.brand_color %>">
+  <div class="mn-container" x-data>
+    <h1 class="mn-cart-title">Your Cart</h1>
+
+    <template x-if="$store.cart.count === 0">
+      <div class="mn-cart-empty">
+        <p class="mn-cart-empty-msg">Your cart is empty.</p>
+        <a href="/collections/all" class="mn-btn">Start Shopping</a>
+      </div>
+    </template>
+
+    <template x-if="$store.cart.count > 0">
+      <div>
+        <p class="mn-cart-summary" x-text="`${$store.cart.count} item(s) in your cart`"></p>
+        <p class="mn-cart-note">Full cart management coming soon.</p>
+        <div class="mn-cart-actions">
+          <a href="/collections/all" class="mn-btn mn-btn-outline">Continue Shopping</a>
+        </div>
+      </div>
+    </template>
+  </div>
+</section>

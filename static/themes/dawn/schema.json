@@ -1,0 +1,50 @@
+{
+  "settings_schema": {
+    "brand_color":   { "type": "color",  "default": "#0f172a", "label": "Brand color" },
+    "font_family":   { "type": "select", "default": "inter",   "label": "Font", "options": ["inter", "playfair", "dm-sans"] },
+    "border_radius": { "type": "range",  "default": 8,         "label": "Corner radius", "min": 0, "max": 24 }
+  },
+  "default_layouts": {
+    "home": {
+      "meta": { "title": "Home — {{store.name}}" },
+      "sections": [
+        { "id": "hdr-1",  "type": "site-header",   "props": {} },
+        { "id": "hero-1", "type": "hero-banner",    "props": { "heading": "Summer Collection", "subheading": "Minimal basics, elevated essentials.", "ctaText": "Shop Now", "ctaHref": "/collections/all" } },
+        { "id": "grid-1", "type": "product-grid",   "props": { "columns": 3, "limit": 6 } },
+        { "id": "ftr-1",  "type": "site-footer",    "props": {} }
+      ]
+    },
+    "product": {
+      "meta": { "title": "Product — {{store.name}}" },
+      "sections": [
+        { "id": "hdr-1",  "type": "site-header",  "props": {} },
+        { "id": "prod-1", "type": "product-card", "props": {} },
+        { "id": "ftr-1",  "type": "site-footer",  "props": {} }
+      ]
+    },
+    "collection": {
+      "meta": { "title": "Shop — {{store.name}}" },
+      "sections": [
+        { "id": "hdr-1",    "type": "site-header",       "props": {} },
+        { "id": "filter-1", "type": "collection-filter", "props": { "limit": 12 } },
+        { "id": "ftr-1",    "type": "site-footer",       "props": {} }
+      ]
+    },
+    "cart": {
+      "meta": { "title": "Cart — {{store.name}}" },
+      "sections": [
+        { "id": "hdr-1",  "type": "site-header", "props": {} },
+        { "id": "cart-1", "type": "cart-page",   "props": {} },
+        { "id": "ftr-1",  "type": "site-footer", "props": {} }
+      ]
+    },
+    "page": {
+      "meta": { "title": "{{store.name}}" },
+      "sections": [
+        { "id": "hdr-1",  "type": "site-header",  "props": {} },
+        { "id": "page-1", "type": "content-page", "props": {} },
+        { "id": "ftr-1",  "type": "site-footer",  "props": {} }
+      ]
+    }
+  }
+}

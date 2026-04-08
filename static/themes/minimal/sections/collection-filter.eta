@@ -1,0 +1,91 @@
+<script id="mn-products-data" type="application/json">
+  <%~ JSON.stringify(it.data.products) %>
+</script>
+
+<section class="mn-collection-section" style="--brand: <%= it.theme.brand_color %>; --radius: <%= it.theme.border_radius %>px" x-data="mnCollectionFilter()">
+  <div class="mn-container">
+    <div class="mn-collection-toolbar">
+      <h1 class="mn-section-heading" style="border-bottom:none; margin-bottom:0">All Products</h1>
+      <div class="mn-collection-controls">
+        <input
+          type="search"
+          class="mn-filter-input"
+          placeholder="Search…"
+          x-model="search"
+          @input.debounce.200ms="applyFilter()"
+        >
+        <select class="mn-sort-select" x-model="sortBy" @change="applyFilter()">
+          <option value="default">Sort: Default</option>
+          <option value="price-asc">Price ↑</option>
+          <option value="price-desc">Price ↓</option>
+          <option value="name-asc">Name A–Z</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mn-product-grid" :style="`--mn-cols: 2`">
+      <template x-for="product in filtered" :key="product.id">
+        <article class="mn-card" x-data="{ qty: 1 }">
+          <a :href="`/products/${product.handle}`" class="mn-card-img-wrap">
+            <img
+              :src="product.image"
+              :alt="product.title"
+              class="mn-card-img"
+              loading="lazy"
+              width="400"
+              height="400"
+            >
+          </a>
+          <a :href="`/products/${product.handle}`">
+            <h3 class="mn-card-title" x-text="product.title"></h3>
+          </a>
+          <p class="mn-card-price" x-text="`$${product.price}`"></p>
+          <div class="mn-card-actions">
+            <div class="mn-qty">
+              <button class="mn-qty-btn" @click="qty = Math.max(1, qty - 1)">−</button>
+              <span class="mn-qty-val" x-text="qty">1</span>
+              <button class="mn-qty-btn" @click="qty++">+</button>
+            </div>
+            <button
+              class="mn-btn mn-btn-sm"
+              @click="addToCart(product, qty)"
+            >Add</button>
+          </div>
+        </article>
+      </template>
+
+      <template x-if="filtered.length === 0">
+        <p class="mn-collection-empty">No products match your search.</p>
+      </template>
+    </div>
+  </div>
+</section>
+
+<script>
+  function mnCollectionFilter() {
+    const all = JSON.parse(document.getElementById('mn-products-data').textContent);
+    return {
+      search: '',
+      sortBy: 'default',
+      filtered: all,
+      applyFilter() {
+        let result = all.filter(p =>
+          p.title.toLowerCase().includes(this.search.toLowerCase())
+        );
+        if (this.sortBy === 'price-asc')  result.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+        if (this.sortBy === 'price-desc') result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+        if (this.sortBy === 'name-asc')   result.sort((a, b) => a.title.localeCompare(b.title));
+        this.filtered = result;
+      },
+      addToCart(product, qty) {
+        fetch('/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ variantId: product.id, qty }),
+        }).then(() => {
+          Alpine.store('cart').count += qty;
+        });
+      },
+    };
+  }
+</script>

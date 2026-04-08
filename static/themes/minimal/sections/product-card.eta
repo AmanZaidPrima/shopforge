@@ -1,0 +1,35 @@
+<section class="mn-detail-section" style="--brand: <%= it.theme.brand_color %>; --radius: <%= it.theme.border_radius %>px">
+  <div class="mn-container mn-detail-grid" x-data="{ qty: 1 }">
+    <div class="mn-detail-img">
+      <img
+        src="<%= it.data.product.image %>"
+        alt="<%= it.data.product.title %>"
+        width="600"
+        height="600"
+        fetchpriority="high"
+      >
+    </div>
+    <div class="mn-detail-info">
+      <h1 class="mn-detail-title"><%= it.data.product.title %></h1>
+      <p class="mn-detail-price">$<%= it.data.product.price %></p>
+      <p class="mn-detail-desc"><%= it.data.product.description %></p>
+
+      <div class="mn-detail-actions">
+        <div class="mn-qty">
+          <button class="mn-qty-btn" @click="qty = Math.max(1, qty - 1)">−</button>
+          <span class="mn-qty-val" x-text="qty">1</span>
+          <button class="mn-qty-btn" @click="qty++">+</button>
+        </div>
+        <button
+          class="mn-btn"
+          hx-post="/cart/add"
+          hx-vals='{"variantId": "<%= it.data.product.id %>"}'
+          hx-swap="none"
+          hx-on::after-request="Alpine.store('cart').count++"
+        >Add to Cart</button>
+      </div>
+
+      <a href="/" class="mn-back-link">← Back to shop</a>
+    </div>
+  </div>
+</section>

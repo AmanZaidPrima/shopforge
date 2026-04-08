@@ -1,0 +1,12 @@
+<section class="mn-hero" style="--brand: <%= it.theme.brand_color %>; --radius: <%= it.theme.border_radius %>px">
+  <div class="mn-container">
+    <div class="mn-hero-inner">
+      <% if (it.props.eyebrow) { %>
+      <p class="mn-hero-eyebrow"><%= it.props.eyebrow %></p>
+      <% } %>
+      <h1 class="mn-hero-heading"><%= it.props.heading %></h1>
+      <p class="mn-hero-sub"><%= it.props.subheading %></p>
+      <a href="<%= it.props.ctaHref %>" class="mn-btn"><%= it.props.ctaText %></a>
+    </div>
+  </div>
+</section>

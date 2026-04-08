@@ -1,0 +1,8 @@
+<section class="mn-content-section" style="--brand: <%= it.theme.brand_color %>">
+  <div class="mn-container">
+    <h1 class="mn-content-title"><%= it.data.title %></h1>
+    <div class="mn-content-body">
+      <p><%= it.data.content %></p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,50 @@
+{
+  "settings_schema": {
+    "brand_color":   { "type": "color",  "default": "#6366f1", "label": "Brand color" },
+    "font_family":   { "type": "select", "default": "dm-sans", "label": "Font", "options": ["dm-sans", "inter", "playfair"] },
+    "border_radius": { "type": "range",  "default": 12,        "label": "Corner radius", "min": 0, "max": 24 }
+  },
+  "default_layouts": {
+    "home": {
+      "meta": { "title": "Home — {{store.name}}" },
+      "sections": [
+        { "id": "hdr-1",  "type": "site-header",   "props": {} },
+        { "id": "hero-1", "type": "hero-banner",    "props": { "eyebrow": "New Season", "heading": "Wear Less, Mean More", "subheading": "Timeless essentials for the considered wardrobe.", "ctaText": "Explore Collection", "ctaHref": "/collections/all" } },
+        { "id": "grid-1", "type": "product-grid",   "props": { "columns": 2, "limit": 6 } },
+        { "id": "ftr-1",  "type": "site-footer",    "props": {} }
+      ]
+    },
+    "product": {
+      "meta": { "title": "Product — {{store.name}}" },
+      "sections": [
+        { "id": "hdr-1",  "type": "site-header",  "props": {} },
+        { "id": "prod-1", "type": "product-card", "props": {} },
+        { "id": "ftr-1",  "type": "site-footer",  "props": {} }
+      ]
+    },
+    "collection": {
+      "meta": { "title": "Shop — {{store.name}}" },
+      "sections": [
+        { "id": "hdr-1",    "type": "site-header",       "props": {} },
+        { "id": "filter-1", "type": "collection-filter", "props": { "limit": 12 } },
+        { "id": "ftr-1",    "type": "site-footer",       "props": {} }
+      ]
+    },
+    "cart": {
+      "meta": { "title": "Cart — {{store.name}}" },
+      "sections": [
+        { "id": "hdr-1",  "type": "site-header", "props": {} },
+        { "id": "cart-1", "type": "cart-page",   "props": {} },
+        { "id": "ftr-1",  "type": "site-footer", "props": {} }
+      ]
+    },
+    "page": {
+      "meta": { "title": "{{store.name}}" },
+      "sections": [
+        { "id": "hdr-1",  "type": "site-header",  "props": {} },
+        { "id": "page-1", "type": "content-page", "props": {} },
+        { "id": "ftr-1",  "type": "site-footer",  "props": {} }
+      ]
+    }
+  }
+}

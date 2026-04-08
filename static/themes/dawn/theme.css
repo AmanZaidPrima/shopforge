@@ -281,6 +281,89 @@ img { display: block; width: 100%; height: auto; }
 }
 .back-link:hover { color: var(--text); }
 
+/* ── Collection Filter ────────────────────────────────────── */
+.collection-section { padding: 4rem 0; }
+
+.collection-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.collection-controls {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.filter-input,
+.sort-select {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 8px);
+  background: var(--bg);
+  font-size: 0.85rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.filter-input:focus,
+.sort-select:focus { border-color: var(--brand); }
+.filter-input { min-width: 200px; }
+
+.collection-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--muted);
+  padding: 3rem 0;
+  font-size: 0.95rem;
+}
+
+/* ── Cart Page ────────────────────────────────────────────── */
+.cart-page-section { padding: 4rem 0; }
+
+.cart-page-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 2rem;
+}
+
+.cart-empty { text-align: center; padding: 2rem 0; }
+.cart-empty-msg { font-size: 1rem; color: var(--muted); margin-bottom: 1.5rem; }
+.cart-has-items { }
+.cart-summary { font-size: 1rem; margin-bottom: 0.5rem; }
+.cart-note { font-size: 0.875rem; color: var(--muted); margin-bottom: 1.5rem; }
+.cart-actions { display: flex; gap: 1rem; }
+
+.btn-outline {
+  background: transparent;
+  color: var(--brand);
+  border: 2px solid var(--brand);
+}
+.btn-outline:hover { opacity: 1; background: var(--brand); color: #fff; }
+
+/* ── Content Page ─────────────────────────────────────────── */
+.content-page-section { padding: 5rem 0; }
+
+.content-page-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.content-page-body {
+  max-width: 640px;
+  font-size: 0.975rem;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
 /* ── Site Footer ──────────────────────────────────────────── */
 .site-footer {
   border-top: 1px solid var(--border);

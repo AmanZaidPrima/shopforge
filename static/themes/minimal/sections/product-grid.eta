@@ -1,0 +1,39 @@
+<section class="mn-grid-section" style="--brand: <%= it.theme.brand_color %>; --radius: <%= it.theme.border_radius %>px">
+  <div class="mn-container">
+    <h2 class="mn-section-heading">Featured Products</h2>
+    <div class="mn-product-grid" style="--mn-cols: <%= it.props.columns %>">
+      <% for (const product of it.data.products) { %>
+      <article class="mn-card" x-data="{ qty: 1 }">
+        <a href="/products/<%= product.handle %>" class="mn-card-img-wrap">
+          <img
+            src="<%= product.image %>"
+            alt="<%= product.title %>"
+            class="mn-card-img"
+            loading="lazy"
+            width="400"
+            height="400"
+          >
+        </a>
+        <a href="/products/<%= product.handle %>">
+          <h3 class="mn-card-title"><%= product.title %></h3>
+        </a>
+        <p class="mn-card-price">$<%= product.price %></p>
+        <div class="mn-card-actions">
+          <div class="mn-qty">
+            <button class="mn-qty-btn" @click="qty = Math.max(1, qty - 1)">−</button>
+            <span class="mn-qty-val" x-text="qty">1</span>
+            <button class="mn-qty-btn" @click="qty++">+</button>
+          </div>
+          <button
+            class="mn-btn mn-btn-sm"
+            hx-post="/cart/add"
+            hx-vals='{"variantId": "<%= product.id %>"}'
+            hx-swap="none"
+            hx-on::after-request="Alpine.store('cart').count++"
+          >Add to Cart</button>
+        </div>
+      </article>
+      <% } %>
+    </div>
+  </div>
+</section>
