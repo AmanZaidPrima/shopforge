@@ -21,9 +21,12 @@ export async function fetchLayout(storeId: string, routeKey: string): Promise<Pa
   return layout;
 }
 
+// Fetches a template string from the presentation-api template store.
+// presentation-api is the source of truth for templates (seeded from disk,
+// writable via PUT /themes/:themeId/sections/:type).
+// Phase 2: the store reads from KV/DB — no code change needed here.
 export async function fetchTemplateString(themeId: string, type: string): Promise<string> {
-  const url = `${PRESENTATION_API}/static/themes/${themeId}/sections/${type}.eta`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Section template not found: ${url} (${res.status})`);
+  const res = await fetch(`${PRESENTATION_API}/themes/${themeId}/sections/${type}`);
+  if (!res.ok) throw new Error(`Section template not found: ${themeId}:${type} (${res.status})`);
   return res.text();
 }

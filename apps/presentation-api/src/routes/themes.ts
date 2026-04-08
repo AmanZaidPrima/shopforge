@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { getThemeSchema, listThemes } from "../storage/index.ts";
+import { getTemplate, getTemplateUpdatedAt, getThemeSchema, listThemes, putTemplate } from "../storage/index.ts";
 
 const themes = new Hono();
 
@@ -34,6 +34,40 @@ themes.get("/:themeId/sections", async (c) => {
   }
 
   return c.json({ theme_id: themeId, sections: [...types].sort() });
+});
+
+// GET /:themeId/sections/:type
+// Returns the raw template string (text/plain) — equivalent to:
+//   SELECT content FROM templates WHERE name = '{themeId}:{type}'
+// This is how the render server fetches templates; in Phase 2 the store
+// reads from KV/DB instead of the in-memory Map seeded from disk.
+themes.get("/:themeId/sections/:type", async (c) => {
+  const { themeId, type } = c.req.param();
+  const content = await getTemplate(themeId, type);
+
+  if (!content) return c.json({ error: "Template not found" }, 404);
+
+  const updatedAt = getTemplateUpdatedAt(themeId, type);
+  return c.text(content, 200, {
+    "Last-Modified": updatedAt?.toUTCString() ?? new Date().toUTCString(),
+  });
+});
+
+// PUT /:themeId/sections/:type
+// Replaces the template string — equivalent to:
+//   UPDATE templates SET content = ?, updated_at = NOW() WHERE name = '{themeId}:{type}'
+// The editor app calls this when a merchant saves a section edit.
+// Note: the render server's compile cache (Map<key, fn>) will be stale
+// until it restarts. Phase 2 will use a cache-bust mechanism (e.g. version
+// token in GET response that the server uses as fnCache key).
+themes.put("/:themeId/sections/:type", async (c) => {
+  const { themeId, type } = c.req.param();
+  const content = await c.req.text();
+
+  if (!content.trim()) return c.json({ error: "Template content is required" }, 400);
+
+  putTemplate(themeId, type, content);
+  return c.json({ ok: true, themeId, type, updatedAt: new Date().toISOString() });
 });
 
 export default themes;

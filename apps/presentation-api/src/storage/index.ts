@@ -99,3 +99,35 @@ export async function deleteLayoutOverride(storeId: string, routeKey: string): P
   const { [routeKey]: _, ...rest } = theme.layout_overrides;
   storeThemes.set(storeId, { ...theme, layout_overrides: rest });
 }
+
+// -- Template store (in-memory; Phase 2: KV `themes:{theme_id}:sections:{type}`) --
+//
+// Simulates a DB table:
+//   id | name (themeId:type) | content (template string) | updated_at
+//
+// Seeded lazily from disk on first read so existing .eta files are the
+// initial "DB rows". In Phase 2, replace seed logic with a KV/DB read.
+
+const templateStore = new Map<string, { content: string; updatedAt: Date }>();
+
+export async function getTemplate(themeId: string, type: string): Promise<string | null> {
+  const key = `${themeId}:${type}`;
+  if (templateStore.has(key)) return templateStore.get(key)!.content;
+
+  // Seed from disk — equivalent to INSERT on first migration from files to DB
+  const file = Bun.file(`${THEMES_PATH}/${themeId}/sections/${type}.eta`);
+  if (!(await file.exists())) return null;
+
+  const content = await file.text();
+  templateStore.set(key, { content, updatedAt: new Date() });
+  return content;
+}
+
+export function putTemplate(themeId: string, type: string, content: string): void {
+  // Equivalent to: UPDATE templates SET content = ?, updated_at = NOW() WHERE name = ?
+  templateStore.set(`${themeId}:${type}`, { content, updatedAt: new Date() });
+}
+
+export function getTemplateUpdatedAt(themeId: string, type: string): Date | null {
+  return templateStore.get(`${themeId}:${type}`)?.updatedAt ?? null;
+}
