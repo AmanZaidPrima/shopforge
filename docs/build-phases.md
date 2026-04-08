@@ -7,12 +7,13 @@
 ```
 apps/
   server/   ← SSR rendering worker (Hono + Eta) — presentation only, no data ownership
-  api/      ← Builder API (Hono) — layout/theme writes to KV, merchant auth
+  presentation-api/  ← Presentation API (Hono) — layout/theme writes to KV, merchant auth
+  store-api/         ← Store API (Hono) — products, collections, orders, cart (Phase 3+)
   editor/   ← Builder UI (Next.js) — visual drag-and-drop editor
 docs/       ← Architecture docs (root level)
 ```
 
-**Boundary rule:** `apps/server` never owns data. It calls `apps/api` (or the backend API) for everything. All ecommerce data (products, orders, cart, customers) lives in the backend team's API.
+**Boundary rule:** `apps/server` never owns data. It calls `apps/presentation-api` (or the backend API) for everything. All ecommerce data (products, orders, cart, customers) lives in the backend team's API.
 
 ---
 
@@ -48,7 +49,7 @@ static/themes/dawn/
 
 ### What was built
 
-**Monorepo:** `apps/server/` fully implemented. `apps/api/` and `apps/editor/` scaffolded (empty).
+**Monorepo:** `apps/server/` fully implemented. `apps/presentation-api/` and `apps/editor/` scaffolded (empty).
 
 **Rendering pipeline**
 - Hono + Eta on Bun, streaming HTML via `TransformStream`
@@ -156,7 +157,7 @@ apps/server/
 - Layout override chain: `storeTheme.layout_overrides[route] ?? theme.default_layouts[route] ?? 404`
 - Streaming remains unchanged
 
-**`apps/api` — Builder API (new)**
+**`apps/presentation-api` — Builder API (new)**
 - Hono app, separate from SSR server
 - Auth: merchant login (Clerk or NextAuth)
 - Endpoints:
@@ -172,7 +173,7 @@ apps/server/
 - Edit section props via sidebar form
 - Switch active theme from theme library
 - Change global theme settings (brand color, font, border radius)
-- "Publish" → calls `apps/api` → KV write → live in <1s
+- "Publish" → calls `apps/presentation-api` → KV write → live in <1s
 
 **Infrastructure**
 - Cloudflare KV for layout + theme storage

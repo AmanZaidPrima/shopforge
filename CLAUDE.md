@@ -11,7 +11,7 @@
 
 ## Project: High-Performance Storefront Platform
 
-**Monorepo:** `apps/server` (SSR worker) · `apps/api` (builder API) · `apps/editor` (Next.js builder UI)  
+**Monorepo:** `apps/server` (SSR worker) · `apps/presentation-api` (builder API) · `apps/editor` (Next.js builder UI)  
 **Docs:** `docs/` (root level)
 
 ### Stack
