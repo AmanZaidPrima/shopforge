@@ -1,6 +1,5 @@
+import { STATIC_BASE } from "../config.ts";
 import type { Store, ThemeSettings } from "../types.ts";
-
-const STATIC_BASE = process.env.STATIC_BASE_URL ?? "http://localhost:3001";
 
 export function shellTop(store: Store, theme: ThemeSettings, title: string): string {
   return `<!DOCTYPE html>

@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from "hono";
+import { resolveStore } from "../clients/presentation-api.ts";
+import { PRESENTATION_API } from "../config.ts";
 import type { AppEnv, ThemeSettings } from "../types.ts";
-
-const API_BASE = process.env.API_BASE_URL ?? "http://localhost:3001";
 
 const FALLBACK_THEME: ThemeSettings = {
   id: "dawn",
@@ -13,28 +13,19 @@ const FALLBACK_THEME: ThemeSettings = {
 export const tenantMiddleware: MiddlewareHandler<AppEnv> = async (c, next) => {
   const hostname = new URL(c.req.url).hostname;
 
-  let res: Response | null = null;
+  let result: Awaited<ReturnType<typeof resolveStore>>;
   try {
-    res = await fetch(`${API_BASE}/stores/resolve/${hostname}`);
+    result = await resolveStore(hostname);
   } catch {
-    // Presentation API unreachable — likely not running in dev
-    console.error(`[tenant] presentation-api unreachable at ${API_BASE}. Run apps/presentation-api.`);
+    console.error(`[tenant] presentation-api unreachable at ${PRESENTATION_API}. Run apps/presentation-api.`);
     return c.json({ error: "Presentation API unavailable" }, 503);
   }
 
-  if (res.status === 404) {
+  if (!result) {
     return c.json({ error: `No store configured for hostname: ${hostname}` }, 404);
   }
 
-  if (!res.ok) {
-    return c.json({ error: "Failed to resolve store" }, 502);
-  }
-
-  const { store, storeTheme } = await res.json() as {
-    store: { id: string; name: string; hostname: string };
-    storeTheme: { theme_id: string; settings: Omit<ThemeSettings, "id"> } | null;
-  };
-
+  const { store, storeTheme } = result;
   const themeSettings: ThemeSettings = storeTheme
     ? { id: storeTheme.theme_id, ...storeTheme.settings }
     : FALLBACK_THEME;
