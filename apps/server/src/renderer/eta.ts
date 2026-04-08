@@ -6,7 +6,7 @@ const fnCache = new Map<string, Function>();
 
 // In production: templates come from KV (`themes:{themeId}:sections:{type}`)
 // Here we fetch from the local static server, which mirrors that interface.
-const STATIC_BASE = process.env.STATIC_BASE_URL ?? "http://localhost:3000";
+const STATIC_BASE = process.env.STATIC_BASE_URL ?? "http://localhost:3001";
 
 export async function getSectionFn(themeId: string, type: string): Promise<Function> {
   const key = `${themeId}:${type}`;

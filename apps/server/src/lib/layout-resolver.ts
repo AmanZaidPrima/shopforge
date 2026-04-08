@@ -4,7 +4,7 @@ const schemaCache = new Map<string, ThemeSchema>();
 
 // In production: schema comes from KV (`themes:{themeId}`)
 // Here we fetch from the local static server, which mirrors that interface.
-const STATIC_BASE = process.env.STATIC_BASE_URL ?? "http://localhost:3000";
+const STATIC_BASE = process.env.STATIC_BASE_URL ?? "http://localhost:3001";
 
 async function getThemeSchema(themeId: string): Promise<ThemeSchema | null> {
   if (schemaCache.has(themeId)) return schemaCache.get(themeId)!;

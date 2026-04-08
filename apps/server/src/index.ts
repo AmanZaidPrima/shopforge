@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { serveStatic } from "hono/bun";
 import type { AppEnv } from "./types.ts";
 import { htmxMiddleware } from "./middleware/htmx.ts";
 import { tenantMiddleware } from "./middleware/tenant.ts";
@@ -11,8 +10,11 @@ const app = new Hono<AppEnv>();
 app.use("*", tenantMiddleware);
 app.use("*", htmxMiddleware);
 
-// Static assets (theme CSS, etc.)
-app.use("/static/*", serveStatic({ root: "./" }));
+// Proxy theme static assets (CSS, templates) to apps/api
+const API_BASE = process.env.API_BASE_URL ?? "http://localhost:3001";
+app.use("/static/themes/*", (c) =>
+  fetch(`${API_BASE}${new URL(c.req.url).pathname}`)
+);
 
 // Storefront routes
 app.get("/favicon.ico", (c) => c.body(null, 204));
