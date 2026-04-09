@@ -7,8 +7,8 @@
 </style>
 <section class="hero-banner">
   <div class="container hero-inner">
-    <h1 class="hero-heading"><%= it.props.heading %></h1>
-    <p class="hero-sub"><%= it.props.subheading %></p>
-    <a href="<%= it.props.ctaHref %>" class="btn"><%= it.props.ctaText %></a>
+    <h1 class="hero-heading"<%~ it.editorMode ? ' data-setting-id="heading"' : '' %>><%= it.props.heading %></h1>
+    <p class="hero-sub"<%~ it.editorMode ? ' data-setting-id="subheading"' : '' %>><%= it.props.subheading %></p>
+    <a href="<%= it.props.ctaHref %>" class="btn"<%~ it.editorMode ? ` data-setting-id="ctaText" data-setting-href="ctaHref"` : '' %>><%= it.props.ctaText %></a>
   </div>
 </section>

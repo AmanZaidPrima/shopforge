@@ -1,0 +1,8 @@
+{
+  "name": "Product Grid",
+  "description": "Grid of product cards fetched from the store catalogue.",
+  "settings": [
+    { "type": "range", "id": "columns", "label": "Columns",         "min": 1, "max": 4, "step": 1, "default": 3 },
+    { "type": "range", "id": "limit",   "label": "Products shown",  "min": 2, "max": 12, "step": 1, "default": 6 }
+  ]
+}

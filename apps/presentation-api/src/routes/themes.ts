@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { getTemplate, getTemplateUpdatedAt, getThemeSchema, listThemes, putTemplate } from "../storage/index.ts";
+import { getTemplate, getTemplateUpdatedAt, getThemeSchema, getSectionSchema, listThemes, putTemplate } from "../storage/index.ts";
 
 const themes = new Hono();
 
@@ -34,6 +34,15 @@ themes.get("/:themeId/sections", async (c) => {
   }
 
   return c.json({ theme_id: themeId, sections: [...types].sort() });
+});
+
+// GET /:themeId/sections/:type/schema
+// Returns the section schema JSON (name, description, settings[])
+themes.get("/:themeId/sections/:type/schema", async (c) => {
+  const { themeId, type } = c.req.param();
+  const schema = await getSectionSchema(themeId, type);
+  if (!schema) return c.json({ error: "Schema not found" }, 404);
+  return c.json(schema);
 });
 
 // GET /:themeId/sections/:type

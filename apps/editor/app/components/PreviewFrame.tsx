@@ -8,10 +8,11 @@ interface PreviewFrameProps {
   iframeRef: RefObject<HTMLIFrameElement | null>;
   width: string;
   previewWidth: PreviewWidth;
+  reloadKey: number;
 }
 
-export default function PreviewFrame({ src, iframeRef, width, previewWidth }: PreviewFrameProps) {
-  const [loading, setLoading] = useState(true);
+export default function PreviewFrame({ src, iframeRef, width, previewWidth, reloadKey }: PreviewFrameProps) {
+  const [loading, setLoading] = useState(false);
 
   const isConstrained = previewWidth !== "desktop";
 
@@ -38,6 +39,7 @@ export default function PreviewFrame({ src, iframeRef, width, previewWidth }: Pr
         )}
 
         <iframe
+          key={reloadKey}
           ref={iframeRef}
           src={src}
           className="w-full h-full border-0 block"

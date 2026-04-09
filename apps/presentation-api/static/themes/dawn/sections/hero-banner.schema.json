@@ -1,0 +1,10 @@
+{
+  "name": "Hero Banner",
+  "description": "Full-width hero section with heading, subheading and call-to-action button.",
+  "settings": [
+    { "type": "text", "id": "heading",    "label": "Heading",      "default": "Summer Collection" },
+    { "type": "text", "id": "subheading", "label": "Subheading",   "default": "Minimal basics, elevated essentials." },
+    { "type": "text", "id": "ctaText",   "label": "Button text",  "default": "Shop Now" },
+    { "type": "url",  "id": "ctaHref",   "label": "Button link",  "default": "/collections/all" }
+  ]
+}

@@ -64,36 +64,25 @@ const storeThemes = new Map<string, StoreTheme>([
   ],
 ]);
 
-export async function getStoreTheme(storeId: string): Promise<StoreTheme | null> {
+export function getStoreTheme(storeId: string): StoreTheme | null {
   return storeThemes.get(storeId) ?? null;
 }
 
-export async function putStoreTheme(storeId: string, data: StoreTheme): Promise<void> {
+export function putStoreTheme(storeId: string, data: StoreTheme): void {
   storeThemes.set(storeId, data);
 }
 
-export async function getLayoutOverride(
-  storeId: string,
-  routeKey: string
-): Promise<PageLayout | null> {
-  const theme = storeThemes.get(storeId);
-  return theme?.layout_overrides[routeKey] ?? null;
+export function getLayoutOverride(storeId: string, routeKey: string): PageLayout | null {
+  return storeThemes.get(storeId)?.layout_overrides[routeKey] ?? null;
 }
 
-export async function putLayoutOverride(
-  storeId: string,
-  routeKey: string,
-  layout: PageLayout
-): Promise<void> {
+export function putLayoutOverride(storeId: string, routeKey: string, layout: PageLayout): void {
   const theme = storeThemes.get(storeId);
   if (!theme) return;
-  storeThemes.set(storeId, {
-    ...theme,
-    layout_overrides: { ...theme.layout_overrides, [routeKey]: layout },
-  });
+  storeThemes.set(storeId, { ...theme, layout_overrides: { ...theme.layout_overrides, [routeKey]: layout } });
 }
 
-export async function deleteLayoutOverride(storeId: string, routeKey: string): Promise<void> {
+export function deleteLayoutOverride(storeId: string, routeKey: string): void {
   const theme = storeThemes.get(storeId);
   if (!theme) return;
   const { [routeKey]: _, ...rest } = theme.layout_overrides;
@@ -112,14 +101,18 @@ const templateStore = new Map<string, { content: string; updatedAt: Date }>();
 
 export async function getTemplate(themeId: string, type: string): Promise<string | null> {
   const key = `${themeId}:${type}`;
-  if (templateStore.has(key)) return templateStore.get(key)!.content;
 
-  // Seed from disk — equivalent to INSERT on first migration from files to DB
   const file = Bun.file(`${THEMES_PATH}/${themeId}/sections/${type}.eta`);
   if (!(await file.exists())) return null;
 
+  const fileMtime = new Date(file.lastModified);
+  const cached = templateStore.get(key);
+
+  // Serve from cache unless the file on disk is newer (covers both dev edits and PUT overrides)
+  if (cached && cached.updatedAt >= fileMtime) return cached.content;
+
   const content = await file.text();
-  templateStore.set(key, { content, updatedAt: new Date() });
+  templateStore.set(key, { content, updatedAt: fileMtime });
   return content;
 }
 
@@ -130,4 +123,20 @@ export function putTemplate(themeId: string, type: string, content: string): voi
 
 export function getTemplateUpdatedAt(themeId: string, type: string): Date | null {
   return templateStore.get(`${themeId}:${type}`)?.updatedAt ?? null;
+}
+
+// -- Section schema (read from disk; same lifecycle as templates) --
+
+const sectionSchemaCache = new Map<string, unknown>();
+
+export async function getSectionSchema(themeId: string, type: string): Promise<unknown | null> {
+  const key = `${themeId}:${type}`;
+  if (sectionSchemaCache.has(key)) return sectionSchemaCache.get(key)!;
+
+  const file = Bun.file(`${THEMES_PATH}/${themeId}/sections/${type}.schema.json`);
+  if (!(await file.exists())) return null;
+
+  const schema = await file.json();
+  sectionSchemaCache.set(key, schema);
+  return schema;
 }

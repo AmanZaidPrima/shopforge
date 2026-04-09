@@ -1,11 +1,17 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import PreviewFrame from "./PreviewFrame";
 import TopBar from "./TopBar";
+import type { SectionSchema, SectionSettingType } from "../../lib/api";
+import { fetchSectionSchema, fetchLayout, saveLayout, previewSection } from "../../lib/api";
 
+const CLIENT_PATCH_TYPES: SectionSettingType[] = ["text", "url"];
 const STOREFRONT_BASE = process.env.NEXT_PUBLIC_STOREFRONT_URL ?? "http://localhost:3000";
+const STORE_ID = "store-1";
+const THEME_ID = "dawn";
+const PREVIEW_DEBOUNCE_MS = 400;
 
 export type PageRoute =
   | { key: "home"; label: "Home"; path: "/" }
@@ -28,16 +34,131 @@ export const PREVIEW_WIDTHS: Record<PreviewWidth, string> = {
   mobile: "390px",
 };
 
+export interface SelectedSection {
+  sectionId: string;
+  sectionType: string;
+  schema: SectionSchema | null;
+  props: Record<string, unknown>;
+}
+
 export default function EditorShell() {
   const [activePage, setActivePage] = useState<PageRoute>(PAGE_ROUTES[0]);
   const [previewWidth, setPreviewWidth] = useState<PreviewWidth>("desktop");
+  const [selected, setSelected] = useState<SelectedSection | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  // editRef = always-current mutable truth. All async ops read from here — no stale closures.
+  // setSelected = display mirror that triggers sidebar re-renders.
+  // setEdit() updates both atomically so they never drift apart.
+  const editRef = useRef<SelectedSection | null>(null);
+  const layoutRef = useRef<Awaited<ReturnType<typeof fetchLayout>>>(null);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const setEdit = useCallback((next: SelectedSection | null) => {
+    editRef.current = next;
+    setSelected(next);
+  }, []);
 
   const iframeSrc = `${STOREFRONT_BASE}${activePage.path}?editor=1`;
 
+  useEffect(() => {
+    fetchLayout(STORE_ID, activePage.key).then((l) => { layoutRef.current = l; });
+  }, [activePage.key]);
+
+  useEffect(() => {
+    async function onMessage(e: MessageEvent) {
+      if (!e.data || e.data.type !== "sf:section:click") return;
+      const { sectionId, sectionType } = e.data as { sectionId: string; sectionType: string };
+
+      iframeRef.current?.contentWindow?.postMessage({ type: "sf:section:select", sectionId }, "*");
+
+      const [schema, layout] = await Promise.all([
+        fetchSectionSchema(THEME_ID, sectionType),
+        layoutRef.current ? Promise.resolve(layoutRef.current) : fetchLayout(STORE_ID, activePage.key),
+      ]);
+
+      layoutRef.current = layout;
+      const section = layout?.sections.find((s) => s.id === sectionId);
+      setEdit({ sectionId, sectionType, schema, props: section?.props ?? {} });
+    }
+
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [activePage.key, setEdit]);
+
   const handlePageChange = useCallback((page: PageRoute) => {
     setActivePage(page);
-  }, []);
+    setEdit(null);
+    iframeRef.current?.contentWindow?.postMessage({ type: "sf:deselect" }, "*");
+  }, [setEdit]);
+
+  const handleDeselect = useCallback(() => {
+    setEdit(null);
+    iframeRef.current?.contentWindow?.postMessage({ type: "sf:deselect" }, "*");
+  }, [setEdit]);
+
+  const handlePropChange = useCallback((settingId: string, value: unknown, settingType: SectionSettingType) => {
+    const prev = editRef.current;
+    if (!prev) return;
+
+    const next = { ...prev, props: { ...prev.props, [settingId]: value } };
+    setEdit(next);
+
+    if (CLIENT_PATCH_TYPES.includes(settingType)) {
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: "sf:setting:patch", sectionId: prev.sectionId, settingId, settingType, value },
+        "*"
+      );
+    } else {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      debounceTimer.current = setTimeout(async () => {
+        const snap = editRef.current;
+        if (!snap) return;
+
+        const html = await previewSection(snap.sectionId, snap.sectionType, snap.props);
+        if (!html) return;
+
+        iframeRef.current?.contentWindow?.postMessage(
+          { type: "sf:section:patch", sectionId: snap.sectionId, html },
+          "*"
+        );
+
+        // Server rendered with props at request time. Any text/url edits typed
+        // during the async fetch are overwritten by the patch above.
+        // Re-apply all text/url settings from current state to close the race.
+        const current = editRef.current;
+        if (!current || current.sectionId !== snap.sectionId || !current.schema) return;
+        for (const setting of current.schema.settings) {
+          if (!CLIENT_PATCH_TYPES.includes(setting.type)) continue;
+          iframeRef.current?.contentWindow?.postMessage(
+            { type: "sf:setting:patch", sectionId: current.sectionId, settingId: setting.id, settingType: setting.type, value: current.props[setting.id] },
+            "*"
+          );
+        }
+      }, PREVIEW_DEBOUNCE_MS);
+    }
+  }, [setEdit]);
+
+  const handleSave = useCallback(async () => {
+    const current = editRef.current;
+    if (!current || !layoutRef.current) return;
+    if (debounceTimer.current) { clearTimeout(debounceTimer.current); debounceTimer.current = null; }
+    setSaving(true);
+
+    const updatedLayout = {
+      ...layoutRef.current,
+      sections: layoutRef.current.sections.map((s) =>
+        s.id === current.sectionId ? { ...s, props: current.props } : s
+      ),
+    };
+
+    await saveLayout(STORE_ID, activePage.key, updatedLayout);
+    layoutRef.current = updatedLayout;
+    setReloadKey((k) => k + 1);
+    setSaving(false);
+  }, [activePage.key]);
 
   return (
     <div className="flex flex-col h-screen bg-[#1a1a1a]">
@@ -50,12 +171,22 @@ export default function EditorShell() {
         storefrontUrl={STOREFRONT_BASE}
       />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar activePage={activePage} pages={PAGE_ROUTES} onPageChange={handlePageChange} />
+        <Sidebar
+          activePage={activePage}
+          pages={PAGE_ROUTES}
+          onPageChange={handlePageChange}
+          selected={selected}
+          onDeselect={handleDeselect}
+          onPropChange={handlePropChange}
+          onSave={handleSave}
+          saving={saving}
+        />
         <PreviewFrame
           src={iframeSrc}
           iframeRef={iframeRef}
           width={PREVIEW_WIDTHS[previewWidth]}
           previewWidth={previewWidth}
+          reloadKey={reloadKey}
         />
       </div>
     </div>

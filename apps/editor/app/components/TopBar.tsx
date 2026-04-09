@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import type { PageRoute, PreviewWidth } from "./EditorShell";
 
 interface TopBarProps {
@@ -17,6 +18,57 @@ const ICONS: Record<PreviewWidth, string> = {
   mobile: "📱",
 };
 
+const VIEWPORT_WIDTHS: PreviewWidth[] = ["desktop", "tablet", "mobile"];
+
+function PageTab({
+  page,
+  isActive,
+  onPageChange,
+}: {
+  page: PageRoute;
+  isActive: boolean;
+  onPageChange: (p: PageRoute) => void;
+}) {
+  const handleClick = useCallback(() => onPageChange(page), [page, onPageChange]);
+  return (
+    <button
+      onClick={handleClick}
+      className={`px-3 py-1 rounded-md border-0 cursor-pointer text-xs transition-all duration-150 ${
+        isActive
+          ? "bg-[#5c6ac4] text-white font-semibold"
+          : "bg-transparent text-[#aaa] font-normal hover:text-[#ddd]"
+      }`}
+    >
+      {page.label}
+    </button>
+  );
+}
+
+function ViewportButton({
+  width,
+  isActive,
+  onPreviewWidthChange,
+}: {
+  width: PreviewWidth;
+  isActive: boolean;
+  onPreviewWidthChange: (w: PreviewWidth) => void;
+}) {
+  const handleClick = useCallback(() => onPreviewWidthChange(width), [width, onPreviewWidthChange]);
+  return (
+    <button
+      onClick={handleClick}
+      title={width}
+      className={`w-7.5 h-7 rounded border-0 cursor-pointer text-sm transition-all duration-150 ${
+        isActive
+          ? "bg-[#3d3d3d] text-[#e0e0e0]"
+          : "bg-transparent text-[#666] hover:text-[#aaa]"
+      }`}
+    >
+      {ICONS[width]}
+    </button>
+  );
+}
+
 export default function TopBar({
   activePage,
   pages,
@@ -28,7 +80,7 @@ export default function TopBar({
   return (
     <div className="h-12 bg-[#2c2c2c] border-b border-[#3a3a3a] flex items-center justify-between px-3 shrink-0 gap-3">
       {/* Left: Logo + store name */}
-      <div className="flex items-center gap-2.5 min-w-[200px]">
+      <div className="flex items-center gap-2.5 min-w-50">
         <div className="w-7 h-7 bg-[#5c6ac4] rounded-md flex items-center justify-center text-white font-bold text-[13px]">
           SF
         </div>
@@ -37,39 +89,25 @@ export default function TopBar({
 
       {/* Center: Page picker */}
       <div className="flex items-center gap-1.5">
-        {pages.map((page) => {
-          const isActive = activePage.key === page.key;
-          return (
-            <button
-              key={page.key}
-              onClick={() => onPageChange(page)}
-              className={`px-3 py-1 rounded-md border-0 cursor-pointer text-xs transition-all duration-150 ${
-                isActive
-                  ? "bg-[#5c6ac4] text-white font-semibold"
-                  : "bg-transparent text-[#aaa] font-normal hover:text-[#ddd]"
-              }`}
-            >
-              {page.label}
-            </button>
-          );
-        })}
+        {pages.map((page) => (
+          <PageTab
+            key={page.key}
+            page={page}
+            isActive={activePage.key === page.key}
+            onPageChange={onPageChange}
+          />
+        ))}
       </div>
 
       {/* Right: viewport toggles + external link */}
-      <div className="flex items-center gap-1.5 min-w-[200px] justify-end">
-        {(["desktop", "tablet", "mobile"] as PreviewWidth[]).map((w) => (
-          <button
+      <div className="flex items-center gap-1.5 min-w-50 justify-end">
+        {VIEWPORT_WIDTHS.map((w) => (
+          <ViewportButton
             key={w}
-            onClick={() => onPreviewWidthChange(w)}
-            title={w}
-            className={`w-[30px] h-7 rounded border-0 cursor-pointer text-sm transition-all duration-150 ${
-              previewWidth === w
-                ? "bg-[#3d3d3d] text-[#e0e0e0]"
-                : "bg-transparent text-[#666] hover:text-[#aaa]"
-            }`}
-          >
-            {ICONS[w]}
-          </button>
+            width={w}
+            isActive={previewWidth === w}
+            onPreviewWidthChange={onPreviewWidthChange}
+          />
         ))}
 
         <div className="w-px h-5 bg-[#3a3a3a] mx-1" />

@@ -27,11 +27,13 @@ export type RenderContext = {
   store: Store;
   theme: ThemeSettings;
   routeParams: Record<string, string>;
+  editorMode?: boolean;
 };
 
 export type AppEnv = {
   Variables: {
     isHtmx: boolean;
+    editorMode: boolean;
     store: Store;
     themeSettings: ThemeSettings;
   };
