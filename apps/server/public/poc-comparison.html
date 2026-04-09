@@ -8,12 +8,23 @@
 </head>
 <body class="bg-[#f8f7f4] text-gray-900 antialiased">
 
+  <!-- ── Nav ── -->
+  <nav class="bg-[#0f0f0f] border-b border-white/10 px-6 py-3">
+    <div class="max-w-4xl mx-auto flex items-center gap-6">
+      <span class="text-white font-bold text-sm tracking-tight">ShopForge Docs</span>
+      <div class="flex items-center gap-4 ml-2">
+        <a href="architecture.html" class="text-xs text-gray-400 hover:text-emerald-400 transition-colors">Architecture</a>
+        <a href="poc-comparison.html" class="text-xs text-emerald-400 font-semibold">POC Comparison</a>
+      </div>
+    </div>
+  </nav>
+
   <!-- ── Header ── -->
   <header class="bg-[#0f0f0f] text-white px-6 py-12">
     <div class="max-w-4xl mx-auto">
-      <p class="text-[10px] font-bold tracking-[0.2em] text-emerald-400 uppercase mb-3">POC Architecture Comparison · Phase 0 &amp; 1</p>
+      <p class="text-[10px] font-bold tracking-[0.2em] text-emerald-400 uppercase mb-3">POC Architecture Comparison</p>
       <h1 class="text-4xl font-extrabold tracking-tight mb-2">Next.js + LiquidJS &nbsp;vs&nbsp; Hono + Eta</h1>
-      <p class="text-gray-400 text-sm mb-10 max-w-xl">Two server-rendered storefront architectures with Alpine.js interactivity. Same HTML output — fundamentally different pipeline cost.</p>
+      <p class="text-gray-400 text-sm mb-10 max-w-xl">Two server-rendered storefront architectures. Same HTML output — fundamentally different pipeline, delivery model, and navigation strategy.</p>
 
       <!-- Stats -->
       <div class="grid grid-cols-4 gap-3">
@@ -55,20 +66,23 @@
 
   <main class="max-w-4xl mx-auto px-6 py-12 space-y-14">
 
-    <!-- ── 1. Request Pipeline ── -->
+    <!-- ── 1. Architecture Pipeline ── -->
     <section>
-      <h2 class="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-5">Request Pipeline</h2>
+      <h2 class="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-5">Architecture Pipeline — Full Lifecycle</h2>
       <div class="grid grid-cols-2 gap-5">
 
         <!-- A: Next.js + LiquidJS -->
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
           <div class="mb-5">
             <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-3 py-1">A · Next.js + LiquidJS</span>
-            <div class="text-[10px] text-gray-300 uppercase font-bold tracking-widest mt-3">Node.js · ISR · App Router</div>
+            <div class="text-[10px] text-gray-300 uppercase font-bold tracking-widest mt-3">Node.js · ISR · App Router · No client nav</div>
           </div>
 
           <div class="relative">
             <div class="absolute left-2.5 top-2 bottom-2 w-px bg-gray-100"></div>
+
+            <!-- First request -->
+            <div class="text-[9px] font-bold uppercase tracking-widest text-gray-300 mb-3 ml-8">First request</div>
 
             <div class="relative flex items-start gap-3 pb-4">
               <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-gray-400"></div></div>
@@ -80,14 +94,7 @@
             <div class="relative flex items-start gap-3 pb-4">
               <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-gray-400"></div></div>
               <div class="-mt-0.5">
-                <div class="text-[11px] font-semibold text-gray-700"><code class="bg-gray-100 px-1 rounded text-[10px]">middleware.ts</code> rewrite</div>
-              </div>
-            </div>
-
-            <div class="relative flex items-start gap-3 pb-4">
-              <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-gray-400"></div></div>
-              <div class="-mt-0.5">
-                <div class="text-[11px] font-semibold text-gray-700"><code class="bg-gray-100 px-1 rounded text-[10px]">page.tsx</code> Server Component</div>
+                <div class="text-[11px] font-semibold text-gray-700"><code class="bg-gray-100 px-1 rounded text-[10px]">middleware.ts</code> → <code class="bg-gray-100 px-1 rounded text-[10px]">page.tsx</code> Server Component</div>
                 <div class="text-[10px] text-gray-400 mt-0.5">resolveRoute → loadData</div>
               </div>
             </div>
@@ -95,66 +102,74 @@
             <div class="relative flex items-start gap-3 pb-4">
               <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div></div>
               <div class="-mt-0.5">
-                <div class="text-[11px] font-semibold text-gray-700">engine.parseAndRender() <span class="text-blue-500 font-bold">~6ms</span></div>
-                <div class="text-[10px] text-gray-400 mt-0.5">LiquidJS — parse + render on every request</div>
+                <div class="text-[11px] font-semibold text-gray-700">LiquidJS parseAndRender <span class="text-blue-500 font-bold">~6ms</span></div>
+                <div class="text-[10px] text-gray-400 mt-0.5">Parse + render on every request</div>
               </div>
             </div>
 
             <div class="relative flex items-start gap-3 pb-4">
               <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-red-50 border border-red-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-red-300"></div></div>
               <div class="-mt-0.5">
-                <div class="text-[11px] font-semibold text-red-300 line-through">React SSR pipeline runs</div>
-                <div class="text-[10px] text-gray-300 mt-0.5">No React components — pipeline cost with no useful output</div>
+                <div class="text-[11px] font-semibold text-red-300 line-through">React SSR pipeline · dangerouslySetInnerHTML</div>
+                <div class="text-[10px] text-gray-300 mt-0.5">Pipeline cost with no useful output — zero React components shipped</div>
               </div>
             </div>
 
-            <div class="relative flex items-start gap-3 pb-4">
-              <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-red-50 border border-red-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-red-300"></div></div>
-              <div class="-mt-0.5">
-                <div class="text-[11px] font-semibold text-red-300 line-through">dangerouslySetInnerHTML wraps output</div>
-                <div class="text-[10px] text-gray-300 mt-0.5">Bypasses React entirely — why run it?</div>
-              </div>
-            </div>
-
-            <div class="relative flex items-start gap-3 pb-4">
+            <div class="relative flex items-start gap-3 pb-6">
               <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-gray-400"></div></div>
               <div class="-mt-0.5">
                 <div class="text-[11px] font-semibold text-gray-700">Full HTML response · ISR cache 60s</div>
+                <div class="text-[10px] text-gray-400 mt-0.5">Entire page buffered, then sent at once</div>
+              </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="text-[9px] font-bold uppercase tracking-widest text-gray-300 mb-3 ml-8 pt-2 border-t border-gray-100">Navigation + updates</div>
+
+            <div class="relative flex items-start gap-3 pb-4">
+              <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-red-50 border border-red-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-red-300"></div></div>
+              <div class="-mt-0.5">
+                <div class="text-[11px] font-semibold text-gray-700">Full page reload on every link</div>
+                <div class="text-[10px] text-gray-400 mt-0.5">No client-side router (React Router needs React components). CSS, JS, fonts re-evaluated.</div>
+              </div>
+            </div>
+
+            <div class="relative flex items-start gap-3 pb-4">
+              <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-red-50 border border-red-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-red-300"></div></div>
+              <div class="-mt-0.5">
+                <div class="text-[11px] font-semibold text-gray-700">Cart / stock → full ISR revalidation</div>
+                <div class="text-[10px] text-gray-400 mt-0.5">Dynamic data disables ISR. No partial update mechanism.</div>
               </div>
             </div>
 
             <div class="relative flex items-start gap-3">
               <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div></div>
               <div class="-mt-0.5">
-                <div class="text-[11px] font-semibold text-gray-700">Alpine.js ~17KB via <code class="bg-gray-100 px-1 rounded text-[10px]">defer</code></div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Total JS: ~107KB (Next.js runtime + Alpine)</div>
+                <div class="text-[11px] font-semibold text-gray-700">~107KB JS shipped</div>
+                <div class="text-[10px] text-gray-400 mt-0.5">Next.js runtime (~90KB) + Alpine (~17KB)</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- B: Hono + Eta + HTMX -->
+        <!-- B: Hono + Eta + HTMX + Streaming -->
         <div class="bg-white rounded-2xl border border-emerald-200 shadow-sm p-6">
           <div class="mb-5">
-            <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1">B · Hono + Eta + HTMX</span>
-            <div class="text-[10px] text-gray-300 uppercase font-bold tracking-widest mt-3">Bun / CF Workers · KV · Streaming</div>
+            <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1">B · Hono + Eta + HTMX + Streaming</span>
+            <div class="text-[10px] text-gray-300 uppercase font-bold tracking-widest mt-3">Bun / CF Workers · KV · TransformStream</div>
           </div>
 
           <div class="relative">
             <div class="absolute left-2.5 top-2 bottom-2 w-px bg-emerald-100"></div>
 
-            <div class="relative flex items-start gap-3 pb-4">
-              <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-gray-400"></div></div>
-              <div class="-mt-0.5">
-                <div class="text-[11px] font-semibold text-gray-700">Browser GET /products/…</div>
-              </div>
-            </div>
+            <!-- First request -->
+            <div class="text-[9px] font-bold uppercase tracking-widest text-emerald-600/60 mb-3 ml-8">First request — streamed</div>
 
             <div class="relative flex items-start gap-3 pb-4">
               <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div></div>
               <div class="-mt-0.5">
                 <div class="text-[11px] font-semibold text-gray-700">CF CDN cache hit → <span class="text-emerald-600 font-bold">8ms done</span></div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Cache miss: continues to Worker</div>
+                <div class="text-[10px] text-gray-400 mt-0.5">Miss: continues to Worker</div>
               </div>
             </div>
 
@@ -162,36 +177,69 @@
               <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div></div>
               <div class="-mt-0.5">
                 <div class="text-[11px] font-semibold text-gray-700">Hono Worker · hostname → tenant</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">KV store + layout + templates — fetched in parallel</div>
+                <div class="text-[10px] text-gray-400 mt-0.5"><code class="bg-gray-100 px-1 rounded text-[10px]">&lt;head&gt;</code> streams immediately — browser loads CSS + JS while server fetches data</div>
               </div>
             </div>
 
             <div class="relative flex items-start gap-3 pb-4">
               <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div></div>
               <div class="-mt-0.5">
-                <div class="text-[11px] font-semibold text-gray-700">Eta compiled fn <span class="text-emerald-600 font-bold">~0.005ms</span> per section</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Compile-once, in-memory cache per <code class="bg-gray-100 px-1 rounded text-[10px]">{themeId}:{type}</code></div>
+                <div class="text-[11px] font-semibold text-gray-700">Promise.all — KV + API data in parallel</div>
+                <div class="text-[10px] text-gray-400 mt-0.5">Layout, templates, backend data — concurrent. Latency = slowest call</div>
               </div>
             </div>
 
             <div class="relative flex items-start gap-3 pb-4">
               <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div></div>
               <div class="-mt-0.5">
-                <div class="text-[11px] font-semibold text-gray-700">TransformStream → progressive chunks</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Browser renders each section as it arrives — no blank screen</div>
+                <div class="text-[11px] font-semibold text-gray-700">Eta compiled fn <span class="text-emerald-600 font-bold">~0.005ms</span> → TransformStream</div>
+                <div class="text-[10px] text-gray-400 mt-0.5">Sections render and stream as chunks — browser paints progressively</div>
+              </div>
+            </div>
+
+            <div class="relative flex items-start gap-3 pb-6">
+              <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div></div>
+              <div class="-mt-0.5">
+                <div class="text-[11px] font-semibold text-gray-700">Alpine ~17KB + HTMX ~17KB via <code class="bg-gray-100 px-1 rounded text-[10px]">defer</code></div>
+                <div class="text-[10px] text-gray-400 mt-0.5">~34KB total — no framework runtime, no hydration</div>
+              </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="text-[9px] font-bold uppercase tracking-widest text-emerald-600/60 mb-3 ml-8 pt-2 border-t border-emerald-100">Navigation + updates — same render path</div>
+
+            <div class="relative flex items-start gap-3 pb-4">
+              <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div></div>
+              <div class="-mt-0.5">
+                <div class="text-[11px] font-semibold text-gray-700"><code class="bg-gray-100 px-1 rounded text-[10px]">hx-boost</code> intercepts links → same route handler</div>
+                <div class="text-[10px] text-gray-400 mt-0.5"><code class="bg-gray-100 px-1 rounded text-[10px]">HX-Request</code> header → body sections only, no <code class="bg-gray-100 px-1 rounded text-[10px]">&lt;head&gt;</code>. No duplicate routes.</div>
+              </div>
+            </div>
+
+            <div class="relative flex items-start gap-3 pb-4">
+              <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div></div>
+              <div class="-mt-0.5">
+                <div class="text-[11px] font-semibold text-gray-700">HTMX swaps <code class="bg-gray-100 px-1 rounded text-[10px]">&lt;body&gt;</code> — zero flicker</div>
+                <div class="text-[10px] text-gray-400 mt-0.5">CSS, fonts persist. Alpine reinits via MutationObserver, <code class="bg-gray-100 px-1 rounded text-[10px]">Alpine.store('cart')</code> survives.</div>
               </div>
             </div>
 
             <div class="relative flex items-start gap-3">
-              <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div></div>
+              <div class="shrink-0 z-10 w-5 h-5 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div></div>
               <div class="-mt-0.5">
-                <div class="text-[11px] font-semibold text-gray-700">Alpine ~17KB + HTMX ~17KB via <code class="bg-gray-100 px-1 rounded text-[10px]">defer</code></div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Total JS: ~34KB — nothing else shipped to browser</div>
+                <div class="text-[11px] font-semibold text-gray-700">Cart mutations → fragment routes</div>
+                <div class="text-[10px] text-gray-400 mt-0.5"><code class="bg-gray-100 px-1 rounded text-[10px]">POST /cart/add</code> → Eta renders cart fragment → HTMX swaps target element only</div>
               </div>
             </div>
           </div>
         </div>
 
+      </div>
+
+      <!-- Architectural insight -->
+      <div class="bg-emerald-50 rounded-xl px-5 py-4 mt-5">
+        <div class="text-[10px] font-semibold text-emerald-700 mb-1">Why this is one architecture, not bolted-on pieces</div>
+        <div class="text-[10px] text-emerald-700 leading-relaxed">In B, every layer serves the same goal: server renders HTML, TransformStream delivers it progressively, HTMX requests more server-rendered HTML for navigation, Alpine adds local interactivity — all sharing one render path. In A, Next.js runs a React SSR pipeline that produces nothing, ISR caches pages that break on dynamic data, and there's no navigation mechanism without React components the storefront doesn't use.</div>
       </div>
     </section>
 
@@ -203,93 +251,75 @@
         <!-- Throughput -->
         <div>
           <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Throughput — requests / sec · higher is better</div>
-          <div class="text-[10px] text-gray-300 mb-5">Next.js measured in force-dynamic SSR mode, no caching — the relevant mode for per-request template rendering</div>
+          <div class="text-[10px] text-gray-300 mb-5">Next.js measured in force-dynamic SSR mode — the relevant mode for per-request template rendering</div>
 
-          <div class="space-y-3">
+          <div class="space-y-2.5">
             <div class="flex items-center gap-4">
               <div class="w-32 shrink-0 text-right text-[11px] text-gray-500">A · Next.js (Node)</div>
-              <div class="flex-1 h-8 bg-gray-50 rounded-lg relative overflow-hidden">
-                <div class="h-full bg-red-100 border-r border-red-200 rounded-l-lg" style="width:0.4%"></div>
+              <div class="flex-1 h-2.5 bg-[#f0ede8] rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#E24B4A]" style="width:0.4%"></div>
               </div>
-              <div class="w-20 shrink-0 text-[12px] font-bold text-red-400">~2,000</div>
+              <div class="w-20 shrink-0 text-[12px] font-semibold text-right text-[#E24B4A]">~2,000</div>
             </div>
             <div class="flex items-center gap-4">
               <div class="w-32 shrink-0 text-right text-[11px] text-gray-500">B · Hono (Node)</div>
-              <div class="flex-1 h-8 bg-gray-50 rounded-lg relative overflow-hidden">
-                <div class="h-full bg-emerald-100 border-r border-emerald-200 rounded-l-lg" style="width:20%"></div>
+              <div class="flex-1 h-2.5 bg-[#f0ede8] rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#1D9E75]" style="width:20%"></div>
               </div>
-              <div class="w-20 shrink-0 text-[12px] font-bold text-emerald-600">~100,000</div>
+              <div class="w-20 shrink-0 text-[12px] font-semibold text-right text-[#1D9E75]">~100,000</div>
             </div>
             <div class="flex items-center gap-4">
               <div class="w-32 shrink-0 text-right text-[11px] text-gray-500">B · Hono (Bun)</div>
-              <div class="flex-1 h-8 bg-emerald-50 rounded-lg relative overflow-hidden">
-                <div class="h-full bg-emerald-200 border-r border-emerald-300 rounded-l-lg" style="width:100%"></div>
+              <div class="flex-1 h-2.5 bg-[#f0ede8] rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#1D9E75]" style="width:100%"></div>
               </div>
-              <div class="w-20 shrink-0 text-[12px] font-bold text-emerald-700">~500,000+</div>
+              <div class="w-20 shrink-0 text-[12px] font-semibold text-right text-[#1D9E75]">~500,000+</div>
             </div>
           </div>
         </div>
 
-        <!-- Stats grid -->
-        <div class="grid grid-cols-4 gap-6 pt-6 border-t border-gray-100">
-          <div>
-            <div class="text-[10px] font-bold uppercase tracking-widest text-gray-300 mb-3">TTFB</div>
-            <div class="space-y-3">
-              <div>
-                <div class="text-[9px] font-bold uppercase text-blue-400 mb-0.5">A</div>
-                <div class="text-xl font-black text-red-400">~300ms</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">origin round-trip</div>
+        <!-- JS to Browser -->
+        <div>
+          <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">JS shipped to browser — lower is better</div>
+          <div class="text-[10px] text-gray-300 mb-4">Hono ships zero JS by default — Alpine + HTMX are additive opt-ins, not framework requirements</div>
+
+          <div class="space-y-2.5">
+            <div class="flex items-center gap-4">
+              <div class="w-32 shrink-0 text-right text-[11px] text-gray-500">A · Next.js</div>
+              <div class="flex-1 h-2.5 bg-[#f0ede8] rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#E24B4A]" style="width:100%"></div>
               </div>
-              <div>
-                <div class="text-[9px] font-bold uppercase text-emerald-500 mb-0.5">B</div>
-                <div class="text-xl font-black text-emerald-500">30–80ms</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">edge, no origin on hit</div>
+              <div class="w-20 shrink-0 text-[12px] font-semibold text-right text-[#E24B4A]">~107KB</div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-32 shrink-0 text-right text-[11px] text-gray-500">B · Hono + Alpine + HTMX</div>
+              <div class="flex-1 h-2.5 bg-[#f0ede8] rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#1D9E75]" style="width:32%"></div>
               </div>
+              <div class="w-20 shrink-0 text-[12px] font-semibold text-right text-[#1D9E75]">~34KB</div>
             </div>
           </div>
-          <div>
-            <div class="text-[10px] font-bold uppercase tracking-widest text-gray-300 mb-3">Template Render</div>
-            <div class="space-y-3">
-              <div>
-                <div class="text-[9px] font-bold uppercase text-blue-400 mb-0.5">A</div>
-                <div class="text-xl font-black text-red-400">~6ms</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">LiquidJS per page</div>
+        </div>
+
+        <!-- Cold Start -->
+        <div>
+          <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Cold start — lower is better</div>
+          <div class="text-[10px] text-gray-300 mb-4">CF Workers use V8 isolates — no process boot, near-zero cold start</div>
+
+          <div class="space-y-2.5">
+            <div class="flex items-center gap-4">
+              <div class="w-32 shrink-0 text-right text-[11px] text-gray-500">A · Next.js (Lambda)</div>
+              <div class="flex-1 h-2.5 bg-[#f0ede8] rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#E24B4A]" style="width:100%"></div>
               </div>
-              <div>
-                <div class="text-[9px] font-bold uppercase text-emerald-500 mb-0.5">B</div>
-                <div class="text-xl font-black text-emerald-500">~0.005ms</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Eta per section</div>
-              </div>
+              <div class="w-20 shrink-0 text-[12px] font-semibold text-right text-[#E24B4A]">~800ms+</div>
             </div>
-          </div>
-          <div>
-            <div class="text-[10px] font-bold uppercase tracking-widest text-gray-300 mb-3">JS to Browser</div>
-            <div class="space-y-3">
-              <div>
-                <div class="text-[9px] font-bold uppercase text-blue-400 mb-0.5">A</div>
-                <div class="text-xl font-black text-red-400">~107KB</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Next.js runtime + Alpine</div>
+            <div class="flex items-center gap-4">
+              <div class="w-32 shrink-0 text-right text-[11px] text-gray-500">B · Hono (CF Workers)</div>
+              <div class="flex-1 h-2.5 bg-[#f0ede8] rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#1D9E75]" style="width:0.6%"></div>
               </div>
-              <div>
-                <div class="text-[9px] font-bold uppercase text-emerald-500 mb-0.5">B</div>
-                <div class="text-xl font-black text-emerald-500">~34KB</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Alpine + HTMX only</div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div class="text-[10px] font-bold uppercase tracking-widest text-gray-300 mb-3">Cold Start</div>
-            <div class="space-y-3">
-              <div>
-                <div class="text-[9px] font-bold uppercase text-blue-400 mb-0.5">A</div>
-                <div class="text-xl font-black text-red-400">~800ms</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Node.js Lambda / edge</div>
-              </div>
-              <div>
-                <div class="text-[9px] font-bold uppercase text-emerald-500 mb-0.5">B</div>
-                <div class="text-xl font-black text-emerald-500">&lt;5ms</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">CF Worker isolate</div>
-              </div>
+              <div class="w-20 shrink-0 text-[12px] font-semibold text-right text-[#1D9E75]">~5ms</div>
             </div>
           </div>
         </div>
@@ -297,7 +327,7 @@
       </div>
     </section>
 
-    <!-- ── 3. Template Engine Deep Dive ── -->
+    <!-- ── 3. Template Engine — Eta vs LiquidJS ── -->
     <section>
       <h2 class="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-5">Template Engine — Eta vs LiquidJS</h2>
       <div class="space-y-5">
@@ -307,235 +337,196 @@
           <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Render speed — 1,000 iterations · lower is better</div>
           <div class="text-[10px] text-gray-300 mb-7">Source: crafter999/template-engine-benchmarks · Node.js</div>
 
-          <div class="space-y-3">
-            <!-- Eta — widths are value/175 as max denominator -->
+          <div class="space-y-2.5">
             <div class="flex items-center gap-4">
-              <div class="w-20 shrink-0 text-right text-[11px] font-bold text-emerald-600">Eta</div>
-              <div class="flex-1 h-7 bg-gray-50 rounded-lg overflow-hidden">
-                <div class="h-full bg-emerald-100 border-r border-emerald-200 rounded-l-lg flex items-center px-2" style="width:11%">
-                </div>
+              <div class="w-20 shrink-0 text-right text-[11px] font-semibold text-[#1D9E75]">Eta</div>
+              <div class="flex-1 h-2.5 bg-[#f0ede8] rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#1D9E75]" style="width:11%"></div>
               </div>
-              <div class="w-14 shrink-0 text-[12px] font-black text-emerald-600">20ms</div>
+              <div class="w-14 shrink-0 text-[12px] font-semibold text-right text-[#1D9E75]">20ms</div>
             </div>
             <div class="flex items-center gap-4">
               <div class="w-20 shrink-0 text-right text-[11px] text-gray-400">EJS</div>
-              <div class="flex-1 h-7 bg-gray-50 rounded-lg overflow-hidden">
-                <div class="h-full bg-gray-200 border-r border-gray-300 rounded-l-lg" style="width:39%"></div>
+              <div class="flex-1 h-2.5 bg-[#f0ede8] rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-gray-300" style="width:39%"></div>
               </div>
-              <div class="w-14 shrink-0 text-[12px] font-semibold text-gray-400">68ms</div>
+              <div class="w-14 shrink-0 text-[12px] font-semibold text-right text-gray-400">68ms</div>
             </div>
             <div class="flex items-center gap-4">
-              <div class="w-20 shrink-0 text-right text-[11px] font-bold text-blue-500">LiquidJS</div>
-              <div class="flex-1 h-7 bg-gray-50 rounded-lg overflow-hidden">
-                <div class="h-full bg-blue-100 border-r border-blue-200 rounded-l-lg" style="width:87%"></div>
+              <div class="w-20 shrink-0 text-right text-[11px] font-semibold text-[#378ADD]">LiquidJS</div>
+              <div class="flex-1 h-2.5 bg-[#f0ede8] rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#378ADD]" style="width:87%"></div>
               </div>
-              <div class="w-14 shrink-0 text-[12px] font-black text-blue-500">153ms</div>
+              <div class="w-14 shrink-0 text-[12px] font-semibold text-right text-[#378ADD]">153ms</div>
             </div>
             <div class="flex items-center gap-4">
               <div class="w-20 shrink-0 text-right text-[11px] text-gray-300">Nunjucks</div>
-              <div class="flex-1 h-7 bg-gray-50 rounded-lg overflow-hidden">
-                <div class="h-full bg-gray-200 border-r border-gray-300 rounded-l-lg" style="width:100%"></div>
+              <div class="flex-1 h-2.5 bg-[#f0ede8] rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-gray-300" style="width:100%"></div>
               </div>
-              <div class="w-14 shrink-0 text-[12px] text-gray-300">175ms</div>
+              <div class="w-14 shrink-0 text-[12px] font-semibold text-right text-gray-300">175ms</div>
             </div>
           </div>
 
-          <!-- Callout -->
           <div class="mt-6 flex items-center gap-4 bg-emerald-50 rounded-xl px-5 py-4">
             <div class="text-center shrink-0">
               <div class="text-3xl font-black text-emerald-600">~7.5×</div>
             </div>
             <div class="text-[11px] text-emerald-700 leading-relaxed">
-              Eta is ~7.5× faster than LiquidJS for 1,000 render iterations. At ShopForge's target of ~0.005ms per section, render time is effectively removed from the TTFB budget.
+              Eta is ~7.5× faster than LiquidJS for 1,000 render iterations. At ~0.005ms per section, template render time is effectively zero in the TTFB budget.
             </div>
           </div>
         </div>
 
-        <!-- Ecosystem stats — two columns -->
+        <!-- Ecosystem — two columns -->
         <div class="grid grid-cols-2 gap-5">
 
           <!-- Eta -->
           <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
             <div class="flex items-center gap-2 mb-5">
-              <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1">Eta v4.5.0</span>
-              <span class="text-[10px] text-gray-300">Dec 2025</span>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1">Eta v4.5.1</span>
+              <span class="text-[10px] text-gray-300">Jan 2026</span>
             </div>
             <div class="grid grid-cols-2 gap-4 mb-5">
               <div>
-                <div class="text-[10px] text-gray-400 mb-0.5">Bundle size (gzip)</div>
-                <div class="text-2xl font-black text-emerald-600">3.81<span class="text-base">KB</span></div>
-                <div class="text-[10px] text-gray-400">CF Workers native</div>
+                <div class="text-[10px] text-gray-400 mb-0.5">Bundle (gzip)</div>
+                <div class="text-2xl font-black text-emerald-600">3.13<span class="text-base">KB</span></div>
               </div>
               <div>
                 <div class="text-[10px] text-gray-400 mb-0.5">Weekly downloads</div>
-                <div class="text-2xl font-black text-gray-700">~2.1M</div>
-                <div class="text-[10px] text-gray-400">growing</div>
-              </div>
-              <div>
-                <div class="text-[10px] text-gray-400 mb-0.5">GitHub stars</div>
-                <div class="text-lg font-bold text-gray-700">1,676 ⭐</div>
-              </div>
-              <div>
-                <div class="text-[10px] text-gray-400 mb-0.5">Maintainer</div>
-                <div class="text-[11px] font-semibold text-gray-700">bgub (Ben Gubler)</div>
-                <div class="text-[10px] text-gray-400">original creator</div>
+                <div class="text-2xl font-black text-emerald-600">~2M</div>
               </div>
             </div>
-            <div class="flex items-start gap-2 text-[10px] text-gray-400 bg-gray-50 rounded-lg px-3 py-2.5">
+            <div class="space-y-1.5 mb-4">
+              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">~7.5× faster than LiquidJS · compile-once cache</span></div>
+              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">3.13KB — native on CF Workers</span></div>
+              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">TypeScript-first · full JS in templates · async/await</span></div>
+              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">EJS drop-in — easy migration path</span></div>
+            </div>
+            <div class="border-t border-gray-100 pt-3 space-y-1.5">
+              <div class="flex items-start gap-2"><span class="text-red-400 text-[11px] font-bold shrink-0">✗</span><span class="text-[11px] text-gray-500">Not sandboxed — unsafe for merchant-authored templates without VM</span></div>
+              <div class="flex items-start gap-2"><span class="text-red-400 text-[11px] font-bold shrink-0">✗</span><span class="text-[11px] text-gray-500">Single maintainer (bgub) · no Shopify syntax</span></div>
+            </div>
+            <div class="flex items-start gap-2 text-[10px] text-gray-400 bg-gray-50 rounded-lg px-3 py-2.5 mt-4">
               <span class="text-amber-400 mt-0.5 shrink-0">ℹ</span>
-              <span>eta-dev org archived Sep 2025 — a repo restructure, not a deprecation. Ben Gubler is actively shipping under bgub/eta.</span>
+              <span>eta-dev org archived Sep 2025 — a repo restructure. Ben Gubler actively shipping under bgub/eta.</span>
             </div>
           </div>
 
           <!-- LiquidJS -->
           <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
             <div class="flex items-center gap-2 mb-5">
-              <span class="text-[10px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-3 py-1">LiquidJS v10.24.0</span>
-              <span class="text-[10px] text-gray-300">Oct 2025</span>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-3 py-1">LiquidJS v10.25.5</span>
+              <span class="text-[10px] text-gray-300">Apr 2026</span>
             </div>
             <div class="grid grid-cols-2 gap-4 mb-5">
               <div>
-                <div class="text-[10px] text-gray-400 mb-0.5">Bundle size (gzip)</div>
-                <div class="text-2xl font-black text-red-400">~18<span class="text-base">KB</span></div>
-                <div class="text-[10px] text-gray-400">over CF Workers limit</div>
+                <div class="text-[10px] text-gray-400 mb-0.5">Bundle (gzip)</div>
+                <div class="text-2xl font-black text-red-400">~22<span class="text-base">KB</span></div>
               </div>
               <div>
                 <div class="text-[10px] text-gray-400 mb-0.5">Weekly downloads</div>
-                <div class="text-2xl font-black text-gray-700">~997K</div>
-                <div class="text-[10px] text-gray-400">stable</div>
-              </div>
-              <div>
-                <div class="text-[10px] text-gray-400 mb-0.5">GitHub stars</div>
-                <div class="text-lg font-bold text-gray-700">1,794 ⭐</div>
-              </div>
-              <div>
-                <div class="text-[10px] text-gray-400 mb-0.5">Spec owner</div>
-                <div class="text-[11px] font-semibold text-gray-700">Shopify ($70B+)</div>
-                <div class="text-[10px] text-gray-400">10+ contributors</div>
+                <div class="text-2xl font-black text-gray-500">~1.4M</div>
               </div>
             </div>
-            <div class="flex items-start gap-2 text-[10px] text-gray-400 bg-gray-50 rounded-lg px-3 py-2.5">
-              <span class="text-emerald-500 mt-0.5 shrink-0">✓</span>
-              <span>Shopify owns the Liquid spec — the ecosystem persists even if the JS port changed maintainers.</span>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Pros / Cons — two columns -->
-        <div class="grid grid-cols-2 gap-5">
-
-          <!-- Eta pros/cons -->
-          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <div class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-4">Eta — Pros &amp; Cons</div>
-            <div class="space-y-1.5 mb-4">
-              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">~7.5× faster than LiquidJS</span></div>
-              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">3.81KB — native on CF Workers</span></div>
-              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">TypeScript-first, full type inference</span></div>
-              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">Full JS in templates — no new syntax</span></div>
-              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">Native async/await, compile-once cache</span></div>
-              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">EJS drop-in — easy migration path</span></div>
-              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">~2.1M weekly downloads, growing</span></div>
-            </div>
-            <div class="border-t border-gray-100 pt-3 space-y-1.5">
-              <div class="flex items-start gap-2"><span class="text-red-400 text-[11px] font-bold shrink-0">✗</span><span class="text-[11px] text-gray-500">Not sandboxed — full JS runs in templates</span></div>
-              <div class="flex items-start gap-2"><span class="text-red-400 text-[11px] font-bold shrink-0">✗</span><span class="text-[11px] text-gray-500">Unsafe for merchant-authored templates without VM</span></div>
-              <div class="flex items-start gap-2"><span class="text-red-400 text-[11px] font-bold shrink-0">✗</span><span class="text-[11px] text-gray-500">No Shopify theme compatibility</span></div>
-              <div class="flex items-start gap-2"><span class="text-red-400 text-[11px] font-bold shrink-0">✗</span><span class="text-[11px] text-gray-500">Single maintainer (bgub)</span></div>
-            </div>
-          </div>
-
-          <!-- LiquidJS pros/cons -->
-          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <div class="text-[10px] font-bold uppercase tracking-widest text-blue-500 mb-4">LiquidJS — Pros &amp; Cons</div>
             <div class="space-y-1.5 mb-4">
               <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">Sandboxed — safe for merchant-authored templates</span></div>
               <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">Shopify <code class="bg-gray-100 px-1 rounded text-[10px]">{{ syntax }}</code> — 5.6M+ stores know it</span></div>
-              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">Readable for non-technical authors</span></div>
               <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">Shopify owns the spec — long-term guarantee</span></div>
-              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">GitHub Docs, Eleventy, Jekyll compatible</span></div>
-              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">10+ contributors, well-documented</span></div>
+              <div class="flex items-start gap-2"><span class="text-emerald-500 text-[11px] font-bold shrink-0">✓</span><span class="text-[11px] text-gray-600">10+ contributors · well-documented</span></div>
             </div>
             <div class="border-t border-gray-100 pt-3 space-y-1.5">
-              <div class="flex items-start gap-2"><span class="text-red-400 text-[11px] font-bold shrink-0">✗</span><span class="text-[11px] text-gray-500">~7.5× slower than Eta</span></div>
-              <div class="flex items-start gap-2"><span class="text-red-400 text-[11px] font-bold shrink-0">✗</span><span class="text-[11px] text-gray-500">~18KB gzip — over CF Workers budget</span></div>
-              <div class="flex items-start gap-2"><span class="text-red-400 text-[11px] font-bold shrink-0">✗</span><span class="text-[11px] text-gray-500">Cannot call JS functions inside templates</span></div>
-              <div class="flex items-start gap-2"><span class="text-red-400 text-[11px] font-bold shrink-0">✗</span><span class="text-[11px] text-gray-500">Logic-restricted — no arbitrary expressions</span></div>
+              <div class="flex items-start gap-2"><span class="text-red-400 text-[11px] font-bold shrink-0">✗</span><span class="text-[11px] text-gray-500">~7.5× slower · ~22KB gzip (7× larger than Eta)</span></div>
+              <div class="flex items-start gap-2"><span class="text-red-400 text-[11px] font-bold shrink-0">✗</span><span class="text-[11px] text-gray-500">No JS functions in templates · logic-restricted</span></div>
+            </div>
+            <div class="flex items-start gap-2 text-[10px] text-gray-400 bg-gray-50 rounded-lg px-3 py-2.5 mt-4">
+              <span class="text-emerald-500 mt-0.5 shrink-0">✓</span>
+              <span>Shopify owns the Liquid spec — ecosystem persists regardless of JS port changes.</span>
             </div>
           </div>
 
-        </div>
-
-        <!-- Feature table -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div class="px-6 pt-6 pb-2">
-            <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Feature Matrix</div>
-          </div>
-          <table class="w-full">
-            <thead>
-              <tr class="border-b border-gray-100 bg-gray-50/70">
-                <th class="text-left text-[10px] font-bold uppercase tracking-widest text-gray-400 px-6 py-3">Feature</th>
-                <th class="text-center text-[10px] font-bold uppercase tracking-widest text-emerald-600 px-4 py-3 w-32">Eta</th>
-                <th class="text-center text-[10px] font-bold uppercase tracking-widest text-blue-500 px-4 py-3 w-32">LiquidJS</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50 text-[11px]">
-              <tr>
-                <td class="px-6 py-2.5 text-gray-600">TypeScript support</td>
-                <td class="text-center px-4 py-2.5 text-emerald-600 font-medium">✓ Native</td>
-                <td class="text-center px-4 py-2.5 text-gray-400">Partial</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-2.5 text-gray-600">Async/await in templates</td>
-                <td class="text-center px-4 py-2.5 text-emerald-600">✓</td>
-                <td class="text-center px-4 py-2.5 text-emerald-600">✓</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-2.5 text-gray-600">Full JS in templates</td>
-                <td class="text-center px-4 py-2.5 text-emerald-600">✓</td>
-                <td class="text-center px-4 py-2.5 text-red-400">✗</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-2.5 text-gray-600">Sandboxed execution</td>
-                <td class="text-center px-4 py-2.5 text-red-400">✗ needs VM</td>
-                <td class="text-center px-4 py-2.5 text-emerald-600">✓ by design</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-2.5 text-gray-600">Compile-once caching</td>
-                <td class="text-center px-4 py-2.5 text-emerald-600">✓ auto</td>
-                <td class="text-center px-4 py-2.5 text-gray-400">manual</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-2.5 text-gray-600">Cloudflare Workers (3.81KB budget)</td>
-                <td class="text-center px-4 py-2.5 text-emerald-600">✓ 3.81KB</td>
-                <td class="text-center px-4 py-2.5 text-red-400">✗ ~18KB</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-2.5 text-gray-600">Shopify <code class="bg-gray-100 px-1 rounded text-[10px]">{{ syntax }}</code></td>
-                <td class="text-center px-4 py-2.5 text-red-400">✗</td>
-                <td class="text-center px-4 py-2.5 text-emerald-600">✓</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-2.5 text-gray-600">Safe for merchant-authored templates</td>
-                <td class="text-center px-4 py-2.5 text-red-400">✗</td>
-                <td class="text-center px-4 py-2.5 text-emerald-600">✓</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-2.5 text-gray-600">Spec backed by a company</td>
-                <td class="text-center px-4 py-2.5 text-red-400">✗</td>
-                <td class="text-center px-4 py-2.5 text-emerald-600">✓ Shopify</td>
-              </tr>
-            </tbody>
-          </table>
         </div>
 
       </div>
     </section>
 
-    <!-- ── 4. Capability Matrix ── -->
+    <!-- ── 4. Architecture Decision ── -->
     <section>
-      <h2 class="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-5">Capability Matrix</h2>
+      <h2 class="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-5">Architecture Decision</h2>
+
+      <!-- The fundamental mismatch -->
+      <div class="bg-[#0f0f0f] rounded-2xl p-6 mb-5">
+        <div class="text-[10px] font-bold uppercase tracking-widest text-red-400 mb-1">The fundamental mismatch</div>
+        <p class="text-[12px] font-semibold text-white mb-3 leading-snug">Next.js is a React framework. Our storefront uses zero React on the shopper path.</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-[10px] text-gray-400 space-y-0.5">
+            <div class="text-[9px] font-bold uppercase tracking-widest text-blue-400 mb-2 font-sans">A · Next.js (cache miss)</div>
+            <div>Browser GET /products</div>
+            <div class="pl-2">→ middleware → App Router → page.tsx</div>
+            <div class="pl-2 text-amber-400">→ LiquidJS render (~6ms)</div>
+            <div class="pl-2 text-red-400 line-through">→ React SSR pipeline — unused</div>
+            <div class="pl-2 text-red-400 line-through">→ dangerouslySetInnerHTML</div>
+            <div class="pl-2">→ full HTML · ISR cache</div>
+            <div class="pl-2 text-red-400">→ navigation: full page reload</div>
+            <div class="mt-1.5 text-red-400 text-[9px]">TTFB ~300ms · no streaming · no partial updates</div>
+          </div>
+          <div class="bg-emerald-950/40 border border-emerald-800/30 rounded-xl p-4 font-mono text-[10px] text-gray-400 space-y-0.5">
+            <div class="text-[9px] font-bold uppercase tracking-widest text-emerald-400 mb-2 font-sans">B · Hono (cache miss)</div>
+            <div>Browser GET /products</div>
+            <div class="pl-2 text-emerald-400">→ &lt;head&gt; streams immediately</div>
+            <div class="pl-2">→ Hono router → KV → tenant</div>
+            <div class="pl-2">→ Promise.all(ecom APIs)</div>
+            <div class="pl-2 text-emerald-400">→ Eta compiled fn (~0.005ms)</div>
+            <div class="pl-2 text-emerald-400">→ TransformStream → HTML chunks</div>
+            <div class="pl-2 text-emerald-400">→ nav: HTMX body swap (same handler)</div>
+            <div class="mt-1.5 text-emerald-400 text-[9px]">TTFB 30–80ms · streaming · fragment updates</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-5 mb-5">
+        <!-- Caching -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">Caching model</div>
+          <table class="w-full text-[11px]">
+            <thead>
+              <tr class="border-b border-gray-100">
+                <th class="text-left text-[9px] font-bold uppercase text-gray-300 pb-2 pr-3">Behaviour</th>
+                <th class="text-left text-[9px] font-bold uppercase text-blue-400 pb-2 pr-3">Next.js ISR</th>
+                <th class="text-left text-[9px] font-bold uppercase text-emerald-500 pb-2">Hono + CF</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <tr><td class="py-2 pr-3 text-gray-500">Cache location</td><td class="py-2 pr-3 text-gray-500">Origin / Vercel</td><td class="py-2 text-emerald-600 font-medium">CF edge PoP</td></tr>
+              <tr><td class="py-2 pr-3 text-gray-500">Hit touches origin?</td><td class="py-2 pr-3 text-red-400">Yes</td><td class="py-2 text-emerald-600">No</td></tr>
+              <tr><td class="py-2 pr-3 text-gray-500">Dynamic data (cart)</td><td class="py-2 pr-3 text-red-400">Disables ISR</td><td class="py-2 text-emerald-600">Always works</td></tr>
+              <tr><td class="py-2 pr-3 text-gray-500">Per-tenant invalidation</td><td class="py-2 pr-3 text-red-400">Not native</td><td class="py-2 text-emerald-600">KV version key</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Chosen stack -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">Chosen stack</div>
+          <table class="w-full text-[11px]">
+            <tbody class="divide-y divide-gray-50">
+              <tr><td class="py-2 text-gray-400 pr-4">Server</td><td class="py-2 font-semibold text-gray-700">Hono on Cloudflare Workers</td></tr>
+              <tr><td class="py-2 text-gray-400 pr-4">Templates</td><td class="py-2 font-semibold text-gray-700">Eta — compiled, ~0.005ms/section</td></tr>
+              <tr><td class="py-2 text-gray-400 pr-4">Delivery</td><td class="py-2 font-semibold text-gray-700">TransformStream — progressive HTML</td></tr>
+              <tr><td class="py-2 text-gray-400 pr-4">Navigation</td><td class="py-2 font-semibold text-gray-700">HTMX — body swap + fragment routes</td></tr>
+              <tr><td class="py-2 text-gray-400 pr-4">Interactivity</td><td class="py-2 font-semibold text-gray-700">Alpine.js (~17KB)</td></tr>
+              <tr><td class="py-2 text-gray-400 pr-4">Cache</td><td class="py-2 font-semibold text-gray-700">CF Cache API (edge-local)</td></tr>
+              <tr><td class="py-2 text-gray-400 pr-4">Editor</td><td class="py-2 font-semibold text-gray-700">Next.js + React (not in shopper path)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Capability matrix -->
       <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 pt-6 pb-2">
+          <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Capability Matrix</div>
+        </div>
         <table class="w-full">
           <thead>
             <tr class="border-b border-gray-100 bg-gray-50/70">
@@ -546,12 +537,22 @@
           </thead>
           <tbody class="divide-y divide-gray-50 text-[11px]">
             <tr>
-              <td class="px-6 py-3 text-gray-600">True HTML streaming</td>
+              <td class="px-6 py-3 text-gray-600">HTML streaming</td>
               <td class="text-center px-4 py-3 text-gray-400">ISR full-page only</td>
               <td class="text-center px-4 py-3 text-emerald-600 font-medium">TransformStream chunks</td>
             </tr>
             <tr>
-              <td class="px-6 py-3 text-gray-600">Cloudflare Workers deploy</td>
+              <td class="px-6 py-3 text-gray-600">Client navigation</td>
+              <td class="text-center px-4 py-3 text-red-400">Full page reload</td>
+              <td class="text-center px-4 py-3 text-emerald-600 font-medium">HTMX body swap</td>
+            </tr>
+            <tr>
+              <td class="px-6 py-3 text-gray-600">Partial updates (cart, stock)</td>
+              <td class="text-center px-4 py-3 text-red-400">Full revalidation</td>
+              <td class="text-center px-4 py-3 text-emerald-600 font-medium">Fragment routes → target swap</td>
+            </tr>
+            <tr>
+              <td class="px-6 py-3 text-gray-600">Cloudflare Workers</td>
               <td class="text-center px-4 py-3 text-red-400">✗ Node only</td>
               <td class="text-center px-4 py-3 text-emerald-600">✓ native</td>
             </tr>
@@ -561,176 +562,72 @@
               <td class="text-center px-4 py-3 text-emerald-600 font-medium">hostname → KV</td>
             </tr>
             <tr>
-              <td class="px-6 py-3 text-gray-600">Partial updates (cart, live stock)</td>
-              <td class="text-center px-4 py-3 text-gray-400">full ISR revalidation</td>
-              <td class="text-center px-4 py-3 text-emerald-600 font-medium">HTMX fragment routes</td>
-            </tr>
-            <tr>
-              <td class="px-6 py-3 text-gray-600">JS shipped to browser</td>
-              <td class="text-center px-4 py-3 text-red-400 font-bold">~107KB</td>
-              <td class="text-center px-4 py-3 text-emerald-600 font-bold">~34KB</td>
-            </tr>
-            <tr>
               <td class="px-6 py-3 text-gray-600">Merchant template syntax</td>
               <td class="text-center px-4 py-3 text-emerald-600 font-medium">Liquid — industry std</td>
               <td class="text-center px-4 py-3 text-gray-400">Eta — JS devs only</td>
             </tr>
             <tr>
               <td class="px-6 py-3 text-gray-600">React on storefront</td>
-              <td class="text-center px-4 py-3 text-red-400">SSR pipeline runs — unused</td>
-              <td class="text-center px-4 py-3 text-emerald-600">zero — not in stack</td>
+              <td class="text-center px-4 py-3 text-red-400">Runs unused</td>
+              <td class="text-center px-4 py-3 text-emerald-600">Not in stack</td>
             </tr>
             <tr>
               <td class="px-6 py-3 text-gray-600">Build step required</td>
-              <td class="text-center px-4 py-3 text-red-400"><code class="bg-red-50 px-1 rounded">next build</code> mandatory</td>
-              <td class="text-center px-4 py-3 text-emerald-600">optional</td>
+              <td class="text-center px-4 py-3 text-red-400"><code class="bg-red-50 px-1 rounded">next build</code></td>
+              <td class="text-center px-4 py-3 text-emerald-600">Optional</td>
             </tr>
           </tbody>
         </table>
       </div>
+
     </section>
 
-    <!-- ── 5. Honest Tradeoffs ── -->
+    <!-- ── 5. Verdict ── -->
     <section>
-      <h2 class="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-5">Honest Tradeoffs</h2>
-      <div class="space-y-5">
+      <h2 class="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-5">Verdict</h2>
+      <div class="bg-[#0f0f0f] rounded-2xl p-8 space-y-6">
 
-        <div class="grid grid-cols-2 gap-5">
-
-          <!-- A advantages -->
-          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <div class="text-[10px] font-bold uppercase tracking-widest text-blue-500 mb-4">Where A has real advantages</div>
-            <div class="space-y-3.5">
-              <div class="border-l-2 border-blue-100 pl-3">
-                <div class="text-[11px] font-semibold text-gray-700">Liquid syntax</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Merchant-authored templates use <code class="bg-gray-100 px-1 rounded">{{ product.title }}</code> — Shopify-standard across 5.6M stores</div>
-              </div>
-              <div class="border-l-2 border-blue-100 pl-3">
-                <div class="text-[11px] font-semibold text-gray-700">ISR simplicity</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">60s cache is battle-tested at scale with minimal custom logic</div>
-              </div>
-              <div class="border-l-2 border-blue-100 pl-3">
-                <div class="text-[11px] font-semibold text-gray-700">Editor already works</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">React + postMessage preview system proven in the POC</div>
-              </div>
-              <div class="border-l-2 border-blue-100 pl-3">
-                <div class="text-[11px] font-semibold text-gray-700">Spec insurance</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Shopify owns the Liquid spec — a fork will always follow</div>
-              </div>
-            </div>
+        <!-- Decision -->
+        <div class="flex items-center gap-6 border-b border-white/10 pb-6">
+          <div class="shrink-0">
+            <div class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-1">Chosen stack</div>
+            <div class="text-3xl font-extrabold text-emerald-400 tracking-tight">Hono + Eta</div>
+            <div class="text-[10px] text-gray-500 mt-1">on Cloudflare Workers</div>
           </div>
-
-          <!-- B advantages -->
-          <div class="bg-white rounded-2xl border border-emerald-200 shadow-sm p-6">
-            <div class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-4">Where B has real advantages</div>
-            <div class="space-y-3.5">
-              <div class="border-l-2 border-emerald-200 pl-3">
-                <div class="text-[11px] font-semibold text-gray-700">Every perf metric</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">TTFB, throughput, JS weight, cold start, streaming — Hono wins each cleanly</div>
-              </div>
-              <div class="border-l-2 border-emerald-200 pl-3">
-                <div class="text-[11px] font-semibold text-gray-700">Architecture match</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">No unused pipeline — request → Eta → HTML → done</div>
-              </div>
-              <div class="border-l-2 border-emerald-200 pl-3">
-                <div class="text-[11px] font-semibold text-gray-700">HTMX fragments</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Cart, stock, live data updated without full page reload</div>
-              </div>
-              <div class="border-l-2 border-emerald-200 pl-3">
-                <div class="text-[11px] font-semibold text-gray-700">True edge</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">CF Workers means &lt;30ms TTFB globally on every request — not just cached pages</div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Context paragraphs -->
-        <div class="grid grid-cols-2 gap-5">
-          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <div class="text-[10px] font-bold uppercase tracking-widest text-blue-500 mb-3">A · Next.js + LiquidJS</div>
-            <p class="text-[11px] text-gray-500 leading-relaxed">Works. The POC proves it. The cost is paying the Next.js + React SSR pipeline on every storefront request while getting nothing from it — no React components, no hydration, no RSC. The real argument is Liquid syntax familiarity and ISR simplicity, not technical performance.</p>
-          </div>
-          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <div class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-3">B · Hono + Eta</div>
-            <p class="text-[11px] text-gray-500 leading-relaxed">Architecturally matched to the job. Hono routes, Eta renders, HTMX navigates, Alpine handles state — no unused framework on the critical path. The honest risk is Eta's single maintainer and smaller ecosystem, though Ben Gubler is actively shipping as of Dec 2025.</p>
+          <div class="flex-1 text-[12px] text-gray-300 leading-relaxed">
+            Every metric — TTFB, throughput, JS weight, cold start — points the same direction. More importantly, the pieces form a coherent architecture: Hono routes and renders, Eta compiles once and executes in microseconds, TransformStream delivers HTML progressively, HTMX navigates by requesting more server-rendered HTML from the same handler, Alpine adds interactivity without hydration. No layer runs unused, no pipeline cost is wasted.
           </div>
         </div>
 
-      </div>
-    </section>
-
-    <!-- ── 6. Decision Guide ── -->
-    <section>
-      <h2 class="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-5">Decision Guide</h2>
-      <div class="bg-[#0f0f0f] rounded-2xl p-8">
-
-        <div class="text-center mb-8">
-          <div class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-2">The decision comes down to one question</div>
-          <div class="text-white text-2xl font-extrabold">Who authors the templates?</div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-5 mb-8">
-
-          <div class="bg-white/5 border border-white/10 rounded-xl p-5">
-            <div class="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-4">Choose A — Next.js + LiquidJS when…</div>
-            <div class="space-y-2.5">
-              <div class="flex items-start gap-2">
-                <span class="text-blue-400 text-[10px] font-bold shrink-0 mt-0.5">→</span>
-                <span class="text-[11px] text-gray-300">Merchants or non-developers author templates directly</span>
+        <!-- Known risks -->
+        <div>
+          <div class="text-[10px] font-bold uppercase tracking-widest text-amber-400 mb-3">Known risks — acknowledged and mitigated</div>
+          <div class="space-y-2">
+            <div class="flex items-start gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+              <span class="text-amber-400 text-[11px] font-bold shrink-0 mt-0.5">!</span>
+              <div>
+                <span class="text-[11px] font-semibold text-white">Single maintainer (bgub)</span>
+                <span class="text-[10px] text-gray-400 ml-2">— Actively shipping as of Jan 2026. MIT-licensed; fork is a one-day operation if needed.</span>
               </div>
-              <div class="flex items-start gap-2">
-                <span class="text-blue-400 text-[10px] font-bold shrink-0 mt-0.5">→</span>
-                <span class="text-[11px] text-gray-300">Shopify theme compatibility is a product requirement</span>
+            </div>
+            <div class="flex items-start gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+              <span class="text-amber-400 text-[11px] font-bold shrink-0 mt-0.5">!</span>
+              <div>
+                <span class="text-[11px] font-semibold text-white">No Liquid syntax</span>
+                <span class="text-[10px] text-gray-400 ml-2">— Templates are developer-authored. Merchants configure sections via the visual editor, not by writing templates.</span>
               </div>
-              <div class="flex items-start gap-2">
-                <span class="text-blue-400 text-[10px] font-bold shrink-0 mt-0.5">→</span>
-                <span class="text-[11px] text-gray-300">Template sandbox is a hard security requirement</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-blue-400 text-[10px] font-bold shrink-0 mt-0.5">→</span>
-                <span class="text-[11px] text-gray-300">ISR caching is sufficient — real-time streaming not needed</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-blue-400 text-[10px] font-bold shrink-0 mt-0.5">→</span>
-                <span class="text-[11px] text-gray-300">Liquid ecosystem familiarity matters to stakeholders</span>
+            </div>
+            <div class="flex items-start gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+              <span class="text-amber-400 text-[11px] font-bold shrink-0 mt-0.5">!</span>
+              <div>
+                <span class="text-[11px] font-semibold text-white">Eta not sandboxed</span>
+                <span class="text-[10px] text-gray-400 ml-2">— Templates are platform-controlled. If merchant authoring is added later, isolated-vm solves it.</span>
               </div>
             </div>
           </div>
-
-          <div class="bg-emerald-950/40 border border-emerald-800/30 rounded-xl p-5">
-            <div class="text-[10px] font-bold uppercase tracking-widest text-emerald-400 mb-4">Choose B — Hono + Eta when…</div>
-            <div class="space-y-2.5">
-              <div class="flex items-start gap-2">
-                <span class="text-emerald-400 text-[10px] font-bold shrink-0 mt-0.5">→</span>
-                <span class="text-[11px] text-gray-300">Templates are written by developers only</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-emerald-400 text-[10px] font-bold shrink-0 mt-0.5">→</span>
-                <span class="text-[11px] text-gray-300">Maximum render speed and throughput are priorities</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-emerald-400 text-[10px] font-bold shrink-0 mt-0.5">→</span>
-                <span class="text-[11px] text-gray-300">Deploying to Cloudflare Workers or edge</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-emerald-400 text-[10px] font-bold shrink-0 mt-0.5">→</span>
-                <span class="text-[11px] text-gray-300">TypeScript-first codebase, full type inference wanted</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-emerald-400 text-[10px] font-bold shrink-0 mt-0.5">→</span>
-                <span class="text-[11px] text-gray-300">True streaming and HTMX partial updates are in scope</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-emerald-400 text-[10px] font-bold shrink-0 mt-0.5">→</span>
-                <span class="text-[11px] text-gray-300">Migrating from EJS — near-zero template rewrite cost</span>
-              </div>
-            </div>
-          </div>
-
         </div>
 
-        <div class="text-center text-[10px] text-gray-600">
+        <div class="text-[10px] text-gray-600 pt-2 border-t border-white/10">
           Sources: crafter999/template-engine-benchmarks · npmjs.com · github.com/bgub/eta · github.com/harttle/liquidjs · socket.dev
         </div>
 
