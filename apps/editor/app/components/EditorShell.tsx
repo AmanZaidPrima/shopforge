@@ -41,17 +41,20 @@ export interface SelectedSection {
   props: Record<string, unknown>;
 }
 
+export interface LayoutSection {
+  id: string;
+  type: string;
+}
+
 export default function EditorShell() {
   const [activePage, setActivePage] = useState<PageRoute>(PAGE_ROUTES[0]);
   const [previewWidth, setPreviewWidth] = useState<PreviewWidth>("desktop");
   const [selected, setSelected] = useState<SelectedSection | null>(null);
   const [saving, setSaving] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [layoutSections, setLayoutSections] = useState<LayoutSection[]>([]);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  // editRef = always-current mutable truth. All async ops read from here — no stale closures.
-  // setSelected = display mirror that triggers sidebar re-renders.
-  // setEdit() updates both atomically so they never drift apart.
   const editRef = useRef<SelectedSection | null>(null);
   const layoutRef = useRef<Awaited<ReturnType<typeof fetchLayout>>>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -64,29 +67,32 @@ export default function EditorShell() {
   const iframeSrc = `${STOREFRONT_BASE}${activePage.path}?editor=1`;
 
   useEffect(() => {
-    fetchLayout(STORE_ID, activePage.key).then((l) => { layoutRef.current = l; });
+    fetchLayout(STORE_ID, activePage.key).then((l) => {
+      layoutRef.current = l;
+      setLayoutSections(l?.sections.filter((s) => !s.disabled).map((s) => ({ id: s.id, type: s.type })) ?? []);
+    });
   }, [activePage.key]);
+
+  const selectSection = useCallback(async (sectionId: string, sectionType: string) => {
+    iframeRef.current?.contentWindow?.postMessage({ type: "sf:section:select", sectionId }, "*");
+    const [schema, layout] = await Promise.all([
+      fetchSectionSchema(THEME_ID, sectionType),
+      layoutRef.current ? Promise.resolve(layoutRef.current) : fetchLayout(STORE_ID, activePage.key),
+    ]);
+    layoutRef.current = layout;
+    const section = layout?.sections.find((s) => s.id === sectionId);
+    setEdit({ sectionId, sectionType, schema, props: section?.props ?? {} });
+  }, [activePage.key, setEdit]);
 
   useEffect(() => {
     async function onMessage(e: MessageEvent) {
       if (!e.data || e.data.type !== "sf:section:click") return;
       const { sectionId, sectionType } = e.data as { sectionId: string; sectionType: string };
-
-      iframeRef.current?.contentWindow?.postMessage({ type: "sf:section:select", sectionId }, "*");
-
-      const [schema, layout] = await Promise.all([
-        fetchSectionSchema(THEME_ID, sectionType),
-        layoutRef.current ? Promise.resolve(layoutRef.current) : fetchLayout(STORE_ID, activePage.key),
-      ]);
-
-      layoutRef.current = layout;
-      const section = layout?.sections.find((s) => s.id === sectionId);
-      setEdit({ sectionId, sectionType, schema, props: section?.props ?? {} });
+      await selectSection(sectionId, sectionType);
     }
-
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [activePage.key, setEdit]);
+  }, [selectSection]);
 
   const handlePageChange = useCallback((page: PageRoute) => {
     setActivePage(page);
@@ -125,9 +131,6 @@ export default function EditorShell() {
           "*"
         );
 
-        // Server rendered with props at request time. Any text/url edits typed
-        // during the async fetch are overwritten by the patch above.
-        // Re-apply all text/url settings from current state to close the race.
         const current = editRef.current;
         if (!current || current.sectionId !== snap.sectionId || !current.schema) return;
         for (const setting of current.schema.settings) {
@@ -141,7 +144,7 @@ export default function EditorShell() {
     }
   }, [setEdit]);
 
-  const handleSave = useCallback(async () => {
+  const handlePublish = useCallback(async () => {
     const current = editRef.current;
     if (!current || !layoutRef.current) return;
     if (debounceTimer.current) { clearTimeout(debounceTimer.current); debounceTimer.current = null; }
@@ -161,7 +164,7 @@ export default function EditorShell() {
   }, [activePage.key]);
 
   return (
-    <div className="flex flex-col h-screen bg-[#1a1a1a]">
+    <div className="flex flex-col h-screen">
       <TopBar
         activePage={activePage}
         pages={PAGE_ROUTES}
@@ -169,17 +172,17 @@ export default function EditorShell() {
         previewWidth={previewWidth}
         onPreviewWidthChange={setPreviewWidth}
         storefrontUrl={STOREFRONT_BASE}
+        onPublish={handlePublish}
+        publishing={saving}
       />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
-          activePage={activePage}
-          pages={PAGE_ROUTES}
-          onPageChange={handlePageChange}
+          sections={layoutSections}
+          selectedId={selected?.sectionId ?? null}
+          onSectionSelect={selectSection}
           selected={selected}
           onDeselect={handleDeselect}
           onPropChange={handlePropChange}
-          onSave={handleSave}
-          saving={saving}
         />
         <PreviewFrame
           src={iframeSrc}

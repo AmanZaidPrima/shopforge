@@ -16,45 +16,47 @@ export default function PreviewFrame({ src, iframeRef, width, previewWidth, relo
 
   const isConstrained = previewWidth !== "desktop";
 
-  return (
-    <div
-      className={`flex-1 flex justify-center overflow-auto ${
-        isConstrained ? "items-start py-6 bg-[#1a1a1a]" : "items-stretch"
-      }`}
-    >
-      <div
-        className={`relative bg-white shrink-0 overflow-hidden transition-[width] duration-250 ease-in-out ${
-          isConstrained ? "rounded-lg shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : ""
-        }`}
-        style={{
-          width,
-          height: isConstrained ? "calc(100vh - 96px)" : "100%",
-        }}
-      >
-        {loading && (
-          <div className="absolute inset-0 bg-[#f5f5f5] flex items-center justify-center z-10 text-[#999] text-[13px] gap-2">
-            <LoadingSpinner />
-            Loading preview…
-          </div>
-        )}
+  // Strip the ?editor=1 param for display
+  const displayUrl = src.replace("?editor=1", "");
 
-        <iframe
-          key={reloadKey}
-          ref={iframeRef}
-          src={src}
-          className="w-full h-full border-0 block"
-          onLoad={() => setLoading(false)}
-          onLoadStart={() => setLoading(true)}
-          title="Storefront preview"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-        />
+  return (
+    <div className="flex-1 flex flex-col bg-[#f3f4f6] min-w-0">
+      {/* URL bar */}
+      <div className="h-9 bg-white border-b border-[#e5e7eb] flex items-center justify-between px-4 shrink-0">
+        <span className="text-[11px] text-[#6b7280] font-mono truncate">{displayUrl}</span>
+        <span className="text-[11px] text-[#16a34a] font-medium shrink-0 ml-4">● Live</span>
+      </div>
+
+      {/* Canvas */}
+      <div className={`flex-1 flex overflow-auto ${isConstrained ? "justify-center items-start p-6" : "items-stretch p-3"}`}>
+        <div
+          className={`relative bg-white overflow-hidden transition-[width] duration-200 ease-in-out ${
+            isConstrained
+              ? "rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-[#e5e7eb]"
+              : "rounded-lg border border-[#d1d5db] w-full"
+          }`}
+          style={{
+            width: isConstrained ? width : "100%",
+            height: isConstrained ? "calc(100vh - 120px)" : "100%",
+          }}
+        >
+          {loading && (
+            <div className="absolute inset-0 bg-white flex items-center justify-center z-10">
+              <div className="w-5 h-5 border-2 border-[#e5e7eb] border-t-[#3b82f6] rounded-full animate-spin" />
+            </div>
+          )}
+          <iframe
+            key={reloadKey}
+            ref={iframeRef}
+            src={src}
+            className="w-full h-full border-0 block"
+            onLoad={() => setLoading(false)}
+            onLoadStart={() => setLoading(true)}
+            title="Storefront preview"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+          />
+        </div>
       </div>
     </div>
-  );
-}
-
-function LoadingSpinner() {
-  return (
-    <div className="w-4 h-4 border-2 border-[#ddd] border-t-[#5c6ac4] rounded-full animate-spin" />
   );
 }
