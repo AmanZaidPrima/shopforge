@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Next.js vs Hono</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f7f4; color: #1a1a1a; padding: 2rem 1rem; line-height: 1.6; }
+  .page { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 2rem; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #888; margin: 2rem 0 0.75rem; }
+  .card { background: #fff; border: 1px solid #e8e5df; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 12px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .highlight-card { border: 2px solid #1D9E75; }
+  .chip { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 6px; margin-bottom: 10px; }
+  .chip-green { background: #E1F5EE; color: #0F6E56; }
+  .chip-gray { background: #f0ede8; color: #555; }
+  .chip-red { background: #FCEBEB; color: #A32D2D; }
+  .chip-amber { background: #FAEEDA; color: #854F0B; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+  .stat { }
+  .stat-label { font-size: 11px; color: #888; margin-bottom: 2px; }
+  .stat-val { font-size: 20px; font-weight: 600; }
+  .stat-sub { font-size: 11px; color: #999; margin-top: 1px; }
+  .green { color: #0F6E56; }
+  .red { color: #A32D2D; }
+  .amber { color: #854F0B; }
+
+  /* flow diagram */
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 10px 0 4px; }
+  .flow-step { font-size: 11px; background: #f0ede8; padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
+  .flow-step.highlight { background: #E1F5EE; color: #0F6E56; font-weight: 500; }
+  .flow-step.dead { background: #FCEBEB; color: #A32D2D; text-decoration: line-through; opacity: 0.7; }
+  .arrow { font-size: 12px; color: #bbb; padding: 0 4px; }
+
+  /* perf bars */
+  .perf-row { display: grid; grid-template-columns: 140px 1fr 80px; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .perf-label { font-size: 12px; color: #555; }
+  .bar-track { height: 10px; background: #f0ede8; border-radius: 99px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 99px; }
+  .perf-num { font-size: 12px; font-weight: 600; text-align: right; }
+
+  /* comparison table */
+  .cmp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .cmp-table th { text-align: left; font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 12px 8px 0; border-bottom: 1px solid #e8e5df; }
+  .cmp-table th:not(:first-child) { text-align: center; }
+  .cmp-table td { padding: 9px 12px 9px 0; border-bottom: 1px solid #f0ede8; color: #444; vertical-align: middle; }
+  .cmp-table td:not(:first-child) { text-align: center; }
+  .cmp-table tr:last-child td { border-bottom: none; }
+  .tick { color: #1D9E75; font-size: 16px; }
+  .cross { color: #E24B4A; font-size: 16px; }
+  .warn { color: #BA7517; font-size: 13px; }
+
+  /* callout */
+  .callout { border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 12px; }
+  .callout-blue { background: #E6F1FB; border-left: 3px solid #378ADD; }
+  .callout-amber { background: #FAEEDA; border-left: 3px solid #EF9F27; }
+  .callout-green { background: #E1F5EE; border-left: 3px solid #1D9E75; }
+  .callout-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .callout-body { font-size: 12px; color: #444; line-height: 1.6; }
+  code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; background: #f0ede8; padding: 2px 6px; border-radius: 4px; }
+
+  .divider { border: none; border-top: 1px solid #e8e5df; margin: 1.5rem 0; }
+  .verdict-box { background: #1a1a1a; color: #f0ede8; border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; }
+  .verdict-box h3 { font-size: 16px; font-weight: 500; margin-bottom: 8px; color: #fff; }
+  .verdict-box p { font-size: 13px; line-height: 1.7; color: #bbb; }
+  .verdict-box code { background: #333; color: #9FE1CB; }
+
+  @media (max-width: 580px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .perf-row { grid-template-columns: 100px 1fr 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Next.js vs Hono</h1>
+  <p class="subtitle">Server-rendered Eta/Liquid templates · Alpine.js interactivity · No React on client</p>
+
+  <!-- what each does -->
+  <div class="section-label">What each approach actually does</div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="chip chip-gray">Approach A — Next.js</div>
+      <div class="flow">
+        <div class="flow-step">Request</div><div class="arrow">→</div>
+        <div class="flow-step">Next.js route</div><div class="arrow">→</div>
+        <div class="flow-step highlight">eta.renderString()</div><div class="arrow">→</div>
+        <div class="flow-step dead">React SSR pipeline</div><div class="arrow">→</div>
+        <div class="flow-step dead">dangerouslySetInnerHTML</div><div class="arrow">→</div>
+        <div class="flow-step">HTML out</div>
+      </div>
+      <p style="font-size:11px;color:#999;margin-top:8px;">The struck-through steps run on every request but produce no useful output for this architecture.</p>
+    </div>
+    <div class="card highlight-card">
+      <div class="chip chip-green">Approach B — Hono</div>
+      <div class="flow">
+        <div class="flow-step">Request</div><div class="arrow">→</div>
+        <div class="flow-step">Hono route</div><div class="arrow">→</div>
+        <div class="flow-step highlight">eta.renderString()</div><div class="arrow">→</div>
+        <div class="flow-step highlight">c.html()</div><div class="arrow">→</div>
+        <div class="flow-step">HTML out</div>
+      </div>
+      <p style="font-size:11px;color:#999;margin-top:8px;">Every step contributes. No unused pipeline.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-amber">
+    <div class="callout-title">The core issue with Next.js here</div>
+    <div class="callout-body">
+      Even with no React on the client, Next.js still ships its runtime JS (~100kb) to every browser, runs a full React SSR pass on the server for each request, and is locked to Node.js. These are features for React apps — unused weight for a template-rendering server.
+    </div>
+  </div>
+
+  <!-- performance -->
+  <div class="section-label">Performance</div>
+  <div class="card">
+    <p style="font-size:12px;color:#888;margin-bottom:16px;">Requests/sec — higher is better. Next.js measured in SSR force-dynamic mode (no caching), which is the relevant mode for per-request template rendering.</p>
+
+    <div class="perf-row">
+      <div class="perf-label">Next.js (Node)</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.4%;background:#E24B4A;"></div></div>
+      <div class="perf-num red">~2,000</div>
+    </div>
+    <div class="perf-row">
+      <div class="perf-label">Hono (Node)</div>
+      <div class="bar-track"><div class="bar-fill" style="width:20%;background:#1D9E75;"></div></div>
+      <div class="perf-num green">~100,000</div>
+    </div>
+    <div class="perf-row">
+      <div class="perf-label">Hono (Bun)</div>
+      <div class="bar-track"><div class="bar-fill" style="width:100%;background:#1D9E75;"></div></div>
+      <div class="perf-num green">~500,000+</div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid #f0ede8;margin:16px 0;">
+
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="stat-label">JS shipped to browser</div>
+        <div class="stat-val red">~100kb</div>
+        <div class="stat-sub">Next.js — React + Next runtime</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">JS shipped to browser</div>
+        <div class="stat-val green">0kb</div>
+        <div class="stat-sub">Hono — nothing, by default</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Cold start (serverless)</div>
+        <div class="stat-val red">~800ms+</div>
+        <div class="stat-sub">Next.js on Lambda/edge</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Cold start (CF Workers)</div>
+        <div class="stat-val green">~5ms</div>
+        <div class="stat-sub">Hono — near zero</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- feature comparison -->
+  <div class="section-label">Feature fit for this architecture</div>
+  <div class="card">
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th style="width:45%;">Requirement</th>
+          <th style="width:27.5%;">Next.js</th>
+          <th style="width:27.5%;">Hono</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Render Eta templates from MySQL</td>
+          <td><span class="warn">⚠</span> works via workaround</td>
+          <td><span class="tick">✓</span> natively</td>
+        </tr>
+        <tr>
+          <td>Stream HTML sections independently</td>
+          <td><span class="cross">✗</span> React controls streaming</td>
+          <td><span class="tick">✓</span> full manual control</td>
+        </tr>
+        <tr>
+          <td>Alpine.js only (no React client)</td>
+          <td><span class="warn">⚠</span> compatible but runtime still ships</td>
+          <td><span class="tick">✓</span> zero framework JS to client</td>
+        </tr>
+        <tr>
+          <td>Cloudflare Workers deploy</td>
+          <td><span class="cross">✗</span> needs Node.js</td>
+          <td><span class="tick">✓</span> first-class</td>
+        </tr>
+        <tr>
+          <td>No build step required</td>
+          <td><span class="cross">✗</span> next build needed</td>
+          <td><span class="tick">✓</span> optional</td>
+        </tr>
+        <tr>
+          <td>Server memory footprint</td>
+          <td>Higher — React VDOM overhead</td>
+          <td>Minimal — string in, string out</td>
+        </tr>
+        <tr>
+          <td>Multi-runtime support</td>
+          <td>Node only</td>
+          <td>Node, Bun, Deno, CF Workers</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- why hono -->
+  <div class="section-label">Why Hono for this specific stack</div>
+  <div class="callout callout-green">
+    <div class="callout-title">This stack: Eta templates from MySQL · Alpine.js · No React anywhere</div>
+    <div class="callout-body">
+      Hono is a plain HTTP server. It receives a request, your code fetches the template, renders it with Eta, streams the HTML out. There is no rendering abstraction between your code and the response. That is exactly what this architecture needs — and exactly what Next.js adds overhead around.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="verdict-box">
+    <h3>Bottom line</h3>
+    <p>
+      Both approaches produce the same output — server-rendered HTML with Alpine.js on the client.
+      The difference is what runs in between. Next.js executes a React SSR pipeline and ships its runtime to the browser
+      for a page that has no React components. Hono runs <code>eta.renderString(template, data)</code>
+      and sends the result directly — no unused steps, no idle runtime, no deployment constraints.
+      For this specific stack — Eta from MySQL, Alpine.js, no React — Next.js has no advantage.
+      It is a React framework being used without React.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

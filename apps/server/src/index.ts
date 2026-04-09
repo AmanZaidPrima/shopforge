@@ -48,6 +48,13 @@ app.post("/preview-section", async (c) => {
   return c.json({ sectionId, html: wrapped });
 });
 
+// Internal docs
+app.get("/docs/:file", async (c) => {
+  const file = Bun.file(`${import.meta.dir}/../public/${c.req.param("file")}`);
+  if (!(await file.exists())) return c.notFound();
+  return new Response(file, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+});
+
 // Storefront routes
 app.get("/favicon.ico", (c) => c.body(null, 204));
 app.get("/", (c) => renderPage(c, "home"));

@@ -30,7 +30,7 @@ export function shellTop(
       Alpine.store('cart', { count: 0 });
     });
   </script>
-  <script src="https://unpkg.com/htmx.org@2/dist/htmx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/htmx.org@2/dist/htmx.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
 </head>
 <body hx-boost="true">

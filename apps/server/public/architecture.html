@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopForge — Architecture</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#f8f7f4] text-gray-900 antialiased">
+
+  <!-- ── Header ── -->
+  <header class="bg-[#0f0f0f] text-white px-6 py-12">
+    <div class="max-w-4xl mx-auto">
+      <p class="text-[10px] font-bold tracking-[0.2em] text-emerald-400 uppercase mb-3">Architecture Overview</p>
+      <h1 class="text-4xl font-extrabold tracking-tight mb-2">ShopForge Platform</h1>
+      <p class="text-gray-400 text-sm mb-10 max-w-lg">Edge-rendered multi-tenant storefront engine. HTML streams from the CDN edge — no origin server on cache hit, no client-side framework on page load.</p>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-4 gap-3">
+        <div class="border border-white/10 rounded-xl p-4">
+          <div class="text-3xl font-black text-emerald-400 tracking-tight">30–80<span class="text-base font-bold">ms</span></div>
+          <div class="text-xs text-gray-400 mt-1">Time to first byte</div>
+          <div class="text-[10px] text-red-400/80 mt-0.5">vs Shopify 300–800ms</div>
+        </div>
+        <div class="border border-white/10 rounded-xl p-4">
+          <div class="text-3xl font-black text-emerald-400 tracking-tight">34<span class="text-base font-bold">KB</span></div>
+          <div class="text-xs text-gray-400 mt-1">JS shipped to browser</div>
+          <div class="text-[10px] text-red-400/80 mt-0.5">vs competitors 180KB+</div>
+        </div>
+        <div class="border border-white/10 rounded-xl p-4">
+          <div class="text-3xl font-black text-emerald-400 tracking-tight">&lt;1<span class="text-base font-bold">s</span></div>
+          <div class="text-xs text-gray-400 mt-1">Publish → live globally</div>
+          <div class="text-[10px] text-red-400/80 mt-0.5">vs Shopify 30–60s</div>
+        </div>
+        <div class="border border-white/10 rounded-xl p-4">
+          <div class="text-3xl font-black text-emerald-400 tracking-tight">~0</div>
+          <div class="text-xs text-gray-400 mt-1">Cumulative layout shift</div>
+          <div class="text-[10px] text-red-400/80 mt-0.5">vs Shopify 0.1–0.3</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-6 py-12 space-y-14">
+
+    <!-- ── 1. System Architecture ── -->
+    <section>
+      <h2 class="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-5">System Architecture</h2>
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+        <svg viewBox="0 0 840 506" xmlns="http://www.w3.org/2000/svg" style="width:100%;font-family:ui-sans-serif,system-ui,sans-serif">
+          <defs>
+            <marker id="ma" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L8,3.5z" fill="#9ca3af"/></marker>
+            <marker id="mg" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L8,3.5z" fill="#10b981"/></marker>
+            <marker id="mb" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L8,3.5z" fill="#3b82f6"/></marker>
+            <marker id="mbd" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L8,3.5z" fill="#93c5fd"/></marker>
+          </defs>
+
+          <!-- Lane backgrounds -->
+          <rect x="4" y="4" width="168" height="432" rx="10" fill="#f0fdf9" stroke="#bbf7d0" stroke-width="1"/>
+          <rect x="668" y="4" width="168" height="280" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+
+          <!-- Lane labels -->
+          <text x="88" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#059669" letter-spacing="1">SHOPPER PATH</text>
+          <text x="752" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#2563eb" letter-spacing="1">BUILDER PATH</text>
+
+          <!-- Cloudflare zone -->
+          <rect x="172" y="268" width="480" height="230" rx="10" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="5,3"/>
+          <text x="412" y="284" text-anchor="middle" font-size="9" fill="#9ca3af" font-weight="600" letter-spacing="1">☁  CLOUDFLARE EDGE</text>
+
+          <!-- ── NODES ── -->
+
+          <!-- Browser -->
+          <rect x="12" y="30" width="150" height="55" rx="8" fill="white" stroke="#6ee7b7" stroke-width="1.5"/>
+          <text x="87" y="55" text-anchor="middle" font-size="14" font-weight="700" fill="#065f46">🌐 Browser</text>
+          <text x="87" y="72" text-anchor="middle" font-size="10" fill="#6b7280">Shopper</text>
+
+          <!-- CDN -->
+          <rect x="12" y="175" width="150" height="70" rx="8" fill="white" stroke="#d1d5db" stroke-width="1.5"/>
+          <text x="87" y="197" text-anchor="middle" font-size="12" font-weight="600" fill="#111827">CDN Cache</text>
+          <text x="87" y="213" text-anchor="middle" font-size="10" fill="#10b981">HIT → 8ms, direct response</text>
+          <text x="87" y="228" text-anchor="middle" font-size="10" fill="#9ca3af">MISS → forward to Worker</text>
+          <text x="87" y="240" text-anchor="middle" font-size="9" fill="#d1d5db">Cloudflare global edge</text>
+
+          <!-- Edge Worker (wide, center) -->
+          <rect x="180" y="288" width="472" height="68" rx="8" fill="white" stroke="#d1d5db" stroke-width="1.5"/>
+          <text x="416" y="314" text-anchor="middle" font-size="13" font-weight="700" fill="#111827">⚙️  Edge Worker</text>
+          <text x="416" y="331" text-anchor="middle" font-size="10" fill="#6b7280">Hono · Eta · TransformStream · hostname → tenant → layout → sections → stream</text>
+          <text x="416" y="346" text-anchor="middle" font-size="9" fill="#9ca3af">compile-once fn cache  ·  ~0.005 ms/render  ·  same code: Bun dev + CF Workers prod</text>
+
+          <!-- KV Store -->
+          <rect x="180" y="390" width="190" height="52" rx="8" fill="white" stroke="#d1d5db" stroke-width="1.5"/>
+          <text x="275" y="412" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">📦 KV Store</text>
+          <text x="275" y="428" text-anchor="middle" font-size="10" fill="#6b7280">Layouts · Templates · Themes</text>
+
+          <!-- Backend API -->
+          <rect x="392" y="390" width="258" height="52" rx="8" fill="white" stroke="#d1d5db" stroke-width="1.5"/>
+          <text x="521" y="412" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">🔌 Backend API</text>
+          <text x="521" y="428" text-anchor="middle" font-size="10" fill="#6b7280">Products · Cart · Orders</text>
+
+          <!-- Visual Editor -->
+          <rect x="674" y="30" width="150" height="55" rx="8" fill="white" stroke="#93c5fd" stroke-width="1.5"/>
+          <text x="749" y="55" text-anchor="middle" font-size="14" font-weight="700" fill="#1d4ed8">✏️ Editor</text>
+          <text x="749" y="72" text-anchor="middle" font-size="10" fill="#6b7280">Visual Builder · Next.js</text>
+
+          <!-- Presentation API -->
+          <rect x="674" y="175" width="150" height="72" rx="8" fill="white" stroke="#93c5fd" stroke-width="1.5"/>
+          <text x="749" y="198" text-anchor="middle" font-size="12" font-weight="600" fill="#1d4ed8">Presentation API</text>
+          <text x="749" y="215" text-anchor="middle" font-size="10" fill="#6b7280">Hono</text>
+          <text x="749" y="230" text-anchor="middle" font-size="9" fill="#9ca3af">source of truth for layouts</text>
+          <text x="749" y="242" text-anchor="middle" font-size="9" fill="#9ca3af">+ tenant theme config</text>
+
+          <!-- Template string callout (subordinate — below KV) -->
+          <line x1="275" y1="442" x2="275" y2="458" stroke="#d1d5db" stroke-width="1" stroke-dasharray="3,2"/>
+          <rect x="152" y="458" width="246" height="38" rx="6" fill="white" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="275" y="474" text-anchor="middle" font-size="9" font-weight="600" fill="#9ca3af">section templates = plain strings in KV</text>
+          <text x="275" y="488" text-anchor="middle" font-size="9" fill="#d1d5db">edit in Builder UI  ·  swap live  ·  no redeploy</text>
+
+          <!-- ── ARROWS ── -->
+
+          <!-- 1. Browser → CDN (GET /page) -->
+          <line x1="87" y1="85" x2="87" y2="173" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ma)"/>
+          <rect x="92" y="120" width="62" height="14" rx="3" fill="#f0fdf9"/>
+          <text x="123" y="131" font-size="9" fill="#374151">GET /page</text>
+
+          <!-- 2. CDN → Worker (cache miss, dashed) -->
+          <line x1="92" y1="245" x2="205" y2="286" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ma)"/>
+          <rect x="90" y="257" width="72" height="14" rx="3" fill="white"/>
+          <text x="126" y="268" text-anchor="middle" font-size="9" fill="#6b7280">cache miss →</text>
+
+          <!-- 3. Worker → KV (read) -->
+          <line x1="298" y1="356" x2="276" y2="388" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ma)"/>
+          <rect x="256" y="364" width="32" height="14" rx="3" fill="white"/>
+          <text x="272" y="375" text-anchor="middle" font-size="9" fill="#6b7280">read</text>
+
+          <!-- 4. Worker → API (fetch) -->
+          <line x1="514" y1="356" x2="521" y2="388" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ma)"/>
+          <rect x="487" y="364" width="60" height="14" rx="3" fill="white"/>
+          <text x="517" y="375" text-anchor="middle" font-size="9" fill="#6b7280">fetch data</text>
+
+          <!-- 5. Worker → Browser (stream HTML — left-side return, green) -->
+          <path d="M 180 322 L 6 322 L 6 57 L 12 57" stroke="#10b981" stroke-width="2" fill="none" marker-end="url(#mg)"/>
+          <rect x="7" y="258" width="58" height="30" rx="3" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+          <text x="36" y="271" text-anchor="middle" font-size="9" font-weight="600" fill="#059669">stream</text>
+          <text x="36" y="283" text-anchor="middle" font-size="9" font-weight="600" fill="#059669">HTML ↑</text>
+
+          <!-- 6. Editor → Presentation API -->
+          <line x1="749" y1="85" x2="749" y2="173" stroke="#93c5fd" stroke-width="1.5" marker-end="url(#mb)"/>
+          <rect x="754" y="120" width="62" height="14" rx="3" fill="#eff6ff"/>
+          <text x="785" y="131" font-size="9" fill="#2563eb">PUT layout</text>
+
+          <!-- 7. Presentation API → KV (write — routes above Worker via left side) -->
+          <path d="M 674 211 L 172 211 L 172 416 L 180 416" stroke="#3b82f6" stroke-width="1.5" fill="none" marker-end="url(#mb)"/>
+          <rect x="330" y="200" width="130" height="14" rx="3" fill="white"/>
+          <text x="395" y="211" text-anchor="middle" font-size="9" fill="#2563eb">write → live &lt;1s globally</text>
+
+          <!-- 8. Editor → Worker (live preview — routes right side, dashed) -->
+          <path d="M 824 57 L 836 57 L 836 322 L 652 322" stroke="#93c5fd" stroke-width="1.5" fill="none" stroke-dasharray="4,2" marker-end="url(#mbd)"/>
+          <rect x="693" y="308" width="75" height="14" rx="3" fill="white"/>
+          <text x="730" y="319" text-anchor="middle" font-size="9" fill="#3b82f6">live preview</text>
+        </svg>
+        <p class="text-[11px] text-gray-400 mt-4 text-center">One Worker codebase serves every merchant — tenant resolved from hostname on every request</p>
+      </div>
+    </section>
+
+    <!-- ── 2. Request Lifecycle ── -->
+    <section>
+      <h2 class="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-5">Request Lifecycle</h2>
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+        <div class="grid grid-cols-2 gap-0">
+
+          <!-- First Visit timeline -->
+          <div class="pr-10">
+            <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-6">First Visit</div>
+            <div class="relative">
+              <div class="absolute left-2.75 top-2 bottom-2 w-px bg-gray-100"></div>
+
+              <div class="relative flex gap-4 pb-7">
+                <div class="shrink-0 z-10 w-5.75 h-5.75 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-gray-300"></div></div>
+                <div class="-mt-0.5">
+                  <div class="text-[12px] font-semibold text-gray-800">Tenant resolved from hostname</div>
+                  <div class="text-[11px] text-gray-400 mt-0.5">Active theme + store settings identified</div>
+                </div>
+              </div>
+
+              <div class="relative flex gap-4 pb-7">
+                <div class="shrink-0 z-10 w-5.75 h-5.75 rounded-full border-2 border-emerald-200 bg-emerald-50 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div></div>
+                <div class="-mt-0.5">
+                  <div class="text-[12px] font-semibold text-gray-800">Promise.all — parallel fetch</div>
+                  <div class="text-[11px] text-gray-400 mt-0.5">Layout JSON · template strings · backend API data — all concurrent. Total latency = slowest single call, not their sum</div>
+                </div>
+              </div>
+
+              <div class="relative flex gap-4 pb-7">
+                <div class="shrink-0 z-10 w-5.75 h-5.75 rounded-full border-2 border-amber-200 bg-amber-50 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div></div>
+                <div class="-mt-0.5">
+                  <div class="text-[12px] font-semibold text-gray-800">&lt;head&gt; streamed — before data resolves</div>
+                  <div class="text-[11px] text-gray-400 mt-0.5">Theme CSS · custom properties · HTMX + Alpine (<code class="bg-gray-100 px-1 rounded">defer</code>). Browser loads scripts and styles while server still awaits API responses</div>
+                </div>
+              </div>
+
+              <div class="relative flex gap-4 pb-7">
+                <div class="shrink-0 z-10 w-5.75 h-5.75 rounded-full border-2 border-emerald-200 bg-emerald-50 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div></div>
+                <div class="-mt-0.5">
+                  <div class="text-[12px] font-semibold text-gray-800">Data resolves → render → stream chunks</div>
+                  <div class="text-[11px] text-gray-400 mt-0.5">Eta renders each section (~0.005 ms) · <code class="bg-gray-100 px-1 rounded">TransformStream</code> flushes progressively · section 1 paints before section 3 has rendered</div>
+                </div>
+              </div>
+
+              <div class="relative flex gap-4">
+                <div class="shrink-0 z-10 w-5.75 h-5.75 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-gray-300"></div></div>
+                <div class="-mt-0.5">
+                  <div class="text-[12px] font-semibold text-gray-800">Alpine initializes after paint</div>
+                  <div class="text-[11px] text-gray-400 mt-0.5"><code class="bg-gray-100 px-1 rounded">x-data</code> scopes isolated per section · <code class="bg-gray-100 px-1 rounded">Alpine.store('cart')</code> shared across page</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Navigation timeline -->
+          <div class="pl-10 border-l border-gray-100">
+            <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-6">Navigation — HTMX body swap</div>
+            <div class="relative">
+              <div class="absolute left-2.75 top-2 bottom-2 w-px bg-gray-100"></div>
+
+              <div class="relative flex gap-4 pb-7">
+                <div class="shrink-0 z-10 w-5.75 h-5.75 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-gray-300"></div></div>
+                <div class="-mt-0.5">
+                  <div class="text-[12px] font-semibold text-gray-800">Link click intercepted by HTMX</div>
+                  <div class="text-[11px] text-gray-400 mt-0.5"><code class="bg-gray-100 px-1 rounded">hx-boost</code> on <code class="bg-gray-100 px-1 rounded">&lt;body&gt;</code> — no full page load triggered</div>
+                </div>
+              </div>
+
+              <div class="relative flex gap-4 pb-7">
+                <div class="shrink-0 z-10 w-5.75 h-5.75 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-gray-300"></div></div>
+                <div class="-mt-0.5">
+                  <div class="text-[12px] font-semibold text-gray-800">Same route handler, partial response</div>
+                  <div class="text-[11px] text-gray-400 mt-0.5"><code class="bg-gray-100 px-1 rounded">HX-Request</code> header detected → <code class="bg-gray-100 px-1 rounded">renderPage()</code> returns body sections only, no <code class="bg-gray-100 px-1 rounded">&lt;head&gt;</code>. No duplicate routes</div>
+                </div>
+              </div>
+
+              <div class="relative flex gap-4 pb-7">
+                <div class="shrink-0 z-10 w-5.75 h-5.75 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-gray-300"></div></div>
+                <div class="-mt-0.5">
+                  <div class="text-[12px] font-semibold text-gray-800">HTMX swaps &lt;body&gt; content</div>
+                  <div class="text-[11px] text-gray-400 mt-0.5">CSS, fonts, Alpine, HTMX — nothing reloads. Zero flicker</div>
+                </div>
+              </div>
+
+              <div class="relative flex gap-4">
+                <div class="shrink-0 z-10 w-5.75 h-5.75 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-gray-300"></div></div>
+                <div class="-mt-0.5">
+                  <div class="text-[12px] font-semibold text-gray-800">Alpine reinits on new sections</div>
+                  <div class="text-[11px] text-gray-400 mt-0.5">MutationObserver picks up new <code class="bg-gray-100 px-1 rounded">x-data</code> nodes · <code class="bg-gray-100 px-1 rounded">Alpine.store('cart')</code> state survives the swap</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3. Streaming Advantage ── -->
+    <section>
+      <h2 class="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-5">The Streaming Advantage</h2>
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+        <div class="space-y-5">
+
+          <!-- Traditional -->
+          <div>
+            <div class="text-[9px] font-bold uppercase tracking-widest text-gray-300 mb-2 ml-16">Traditional SSR — blank screen until everything is ready</div>
+            <div class="flex items-center gap-3 mb-1.5">
+              <span class="w-14 text-right text-[9px] text-gray-300 uppercase font-bold shrink-0">Server</span>
+              <div class="relative flex-1 h-7">
+                <div class="absolute inset-0 bg-gray-100 border border-gray-200 rounded-md flex items-center px-3" style="width:82%">
+                  <span class="text-[9px] text-gray-400">wait for all data · render everything · build full HTML response</span>
+                </div>
+                <div class="absolute inset-0 bg-red-50 border border-red-200 rounded-md flex items-center justify-center" style="left:83%;right:0">
+                  <span class="text-[9px] text-red-400 font-semibold">→ send</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-14 text-right text-[9px] text-gray-300 uppercase font-bold shrink-0">Browser</span>
+              <div class="relative flex-1 h-7">
+                <div class="absolute inset-0 rounded-md bg-gray-50 flex items-center px-3" style="width:82%">
+                  <span class="text-[9px] text-gray-300">blank screen...</span>
+                </div>
+                <div class="absolute inset-0 bg-red-50 border border-red-200 rounded-md flex items-center justify-center" style="left:83%;right:0">
+                  <span class="text-[9px] text-red-400">paints all</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="flex items-center gap-3">
+            <div class="w-14 shrink-0"></div>
+            <div class="flex-1 flex items-center gap-3">
+              <div class="flex-1 border-t border-dashed border-gray-200"></div>
+              <span class="text-[9px] font-bold uppercase tracking-widest text-gray-300">vs</span>
+              <div class="flex-1 border-t border-dashed border-gray-200"></div>
+            </div>
+          </div>
+
+          <!-- ShopForge -->
+          <div>
+            <div class="text-[9px] font-bold uppercase tracking-widest text-emerald-600 mb-2 ml-16">ShopForge — browser starts painting at ~38ms</div>
+            <div class="flex items-center gap-3 mb-1.5">
+              <span class="w-14 text-right text-[9px] text-emerald-600 uppercase font-bold shrink-0">Server</span>
+              <div class="relative flex-1 h-7">
+                <div class="absolute inset-0 bg-emerald-100 border border-emerald-200 rounded-md flex items-center justify-center" style="width:18%">
+                  <span class="text-[9px] font-semibold text-emerald-700">&lt;head&gt;</span>
+                </div>
+                <div class="absolute inset-0 bg-gray-100 border border-gray-200 rounded-md flex items-center justify-center" style="left:19%;width:18%">
+                  <span class="text-[9px] text-gray-400">fetch all</span>
+                </div>
+                <div class="absolute inset-0 bg-emerald-100 border border-emerald-200 rounded-md flex items-center justify-center" style="left:38%;width:13%">
+                  <span class="text-[9px] font-semibold text-emerald-700">s1</span>
+                </div>
+                <div class="absolute inset-0 bg-gray-100 border border-gray-200 rounded-md flex items-center justify-center" style="left:52%;width:10%">
+                  <span class="text-[9px] text-gray-400">fetch</span>
+                </div>
+                <div class="absolute inset-0 bg-emerald-100 border border-emerald-200 rounded-md flex items-center justify-center" style="left:63%;width:13%">
+                  <span class="text-[9px] font-semibold text-emerald-700">s2</span>
+                </div>
+                <div class="absolute inset-0 bg-emerald-100 border border-emerald-200 rounded-md flex items-center justify-center" style="left:77%;right:0">
+                  <span class="text-[9px] font-semibold text-emerald-700">s3</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-14 text-right text-[9px] text-emerald-600 uppercase font-bold shrink-0">Browser</span>
+              <div class="relative flex-1 h-7">
+                <div class="absolute inset-0 bg-amber-50 border border-amber-200 rounded-md flex items-center justify-center" style="left:19%;width:18%">
+                  <span class="text-[9px] text-amber-600 font-medium">CSS + JS</span>
+                </div>
+                <div class="absolute inset-0 bg-emerald-100 border border-emerald-200 rounded-md flex items-center justify-center" style="left:38%;width:13%">
+                  <span class="text-[9px] font-semibold text-emerald-700">s1 ✓</span>
+                </div>
+                <div class="absolute inset-0 bg-emerald-100 border border-emerald-200 rounded-md flex items-center justify-center" style="left:63%;width:13%">
+                  <span class="text-[9px] font-semibold text-emerald-700">s2 ✓</span>
+                </div>
+                <div class="absolute inset-0 bg-emerald-100 border border-emerald-200 rounded-md flex items-center justify-center" style="left:77%;right:0">
+                  <span class="text-[9px] font-semibold text-emerald-700">s3 ✓</span>
+                </div>
+                <!-- First paint marker -->
+                <div class="absolute top-0 bottom-0 border-l-2 border-dashed border-emerald-400" style="left:38%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Time axis -->
+          <div class="flex items-center gap-3">
+            <div class="w-14 shrink-0"></div>
+            <div class="flex-1 flex justify-between">
+              <span class="text-[9px] text-gray-300 font-mono">0ms</span>
+              <span class="text-[9px] text-gray-300 font-mono">20ms</span>
+              <span class="text-[9px] text-gray-300 font-mono">40ms</span>
+              <span class="text-[9px] text-gray-300 font-mono">60ms</span>
+              <span class="text-[9px] text-gray-300 font-mono">80ms</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Insight -->
+        <div class="mt-6 flex items-center gap-4 bg-gray-50 rounded-xl px-5 py-4">
+          <div class="text-center shrink-0">
+            <div class="text-2xl font-black text-red-400">80ms</div>
+            <div class="text-[9px] text-gray-400 mt-0.5">Traditional first paint</div>
+          </div>
+          <div class="flex-1 flex items-center gap-2">
+            <div class="flex-1 h-1.5 bg-red-100 rounded-full"></div>
+            <span class="text-[9px] font-bold text-gray-400 shrink-0">2× faster</span>
+            <div class="flex-1 h-1.5 bg-emerald-200 rounded-full"></div>
+          </div>
+          <div class="text-center shrink-0">
+            <div class="text-2xl font-black text-emerald-500">~38ms</div>
+            <div class="text-[9px] text-gray-400 mt-0.5">ShopForge first paint</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── 4. Stack + Data Ownership ── -->
+    <section class="grid grid-cols-5 gap-6 items-start">
+
+      <!-- Tech table -->
+      <div class="col-span-3">
+        <h2 class="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-5">Technology Decisions</h2>
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-gray-100 bg-gray-50/70">
+                <th class="text-left text-[10px] font-bold uppercase tracking-widest text-gray-400 px-4 py-3">Choice</th>
+                <th class="text-left text-[10px] font-bold uppercase tracking-widest text-gray-400 px-4 py-3">Why</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 text-[11px]">
+              <tr>
+                <td class="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">Hono</td>
+                <td class="px-4 py-3 text-gray-500">Identical code on Bun (dev) and CF Workers (prod). Zero adaptation layer.</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">Eta templates</td>
+                <td class="px-4 py-3 text-gray-500">Compile once → JS function cached in memory. 0.005ms per render, vs 0.03ms+ for alternatives.</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">Alpine.js ~17KB</td>
+                <td class="px-4 py-3 text-gray-500">Sprinkles on SSR HTML. No build, no hydration, auto-reinit after HTMX swaps.</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">HTMX ~17KB</td>
+                <td class="px-4 py-3 text-gray-500">Navigation = body swap from server. Same render path as first load. No JS router.</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">Cloudflare KV</td>
+                <td class="px-4 py-3 text-gray-500">Sub-ms reads at edge. Layout writes propagate globally in ~100ms.</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">TransformStream</td>
+                <td class="px-4 py-3 text-gray-500">Enables progressive HTML streaming shown above. Browser starts before server finishes.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Data ownership -->
+      <div class="col-span-2">
+        <h2 class="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-5">Data Ownership</h2>
+        <div class="space-y-3">
+          <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5">
+            <div class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-3">ShopForge</div>
+            <ul class="space-y-2 text-[11px] text-emerald-900">
+              <li class="flex gap-2 items-baseline"><span class="text-emerald-300 shrink-0">→</span>Page layout JSON</li>
+              <li class="flex gap-2 items-baseline"><span class="text-emerald-300 shrink-0">→</span>Eta section templates</li>
+              <li class="flex gap-2 items-baseline"><span class="text-emerald-300 shrink-0">→</span>Theme config + defaults</li>
+              <li class="flex gap-2 items-baseline"><span class="text-emerald-300 shrink-0">→</span>Compiled fn cache (per Worker)</li>
+            </ul>
+          </div>
+          <div class="bg-white border border-gray-200 rounded-2xl p-5">
+            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Backend Team</div>
+            <ul class="space-y-2 text-[11px] text-gray-500">
+              <li class="flex gap-2 items-baseline"><span class="text-gray-200 shrink-0">→</span>Products · collections</li>
+              <li class="flex gap-2 items-baseline"><span class="text-gray-200 shrink-0">→</span>Orders · cart · checkout</li>
+              <li class="flex gap-2 items-baseline"><span class="text-gray-200 shrink-0">→</span>Customers · auth</li>
+              <li class="flex gap-2 items-baseline"><span class="text-gray-200 shrink-0">→</span>Merchant account settings</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-200 mt-8 py-6 px-6">
+    <div class="max-w-4xl mx-auto flex justify-between items-center">
+      <span class="text-xs text-gray-400">ShopForge Platform — Architecture Reference</span>
+      <span class="text-xs text-gray-300">Phase 1 complete · Phase 2 next: Cloudflare Workers + real KV</span>
+    </div>
+  </footer>
+
+</body>
+</html>
