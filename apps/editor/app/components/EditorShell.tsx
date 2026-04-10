@@ -50,7 +50,6 @@ export default function EditorShell() {
   const [previewWidth, setPreviewWidth] = useState<PreviewWidth>("desktop");
   const [selected, setSelected] = useState<SelectedSection | null>(null);
   const [saving, setSaving] = useState(false);
-  const [reloadKey, setReloadKey] = useState(0);
   const [layoutSections, setLayoutSections] = useState<LayoutSection[]>([]);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -150,7 +149,6 @@ export default function EditorShell() {
     if (layoutRef.current) await saveLayout(STORE_ID, activePage.key, layoutRef.current);
     await publishLayout(STORE_ID, activePage.key);
     setSaving(false);
-    setReloadKey((k) => k + 1);
   }, [activePage.key]);
 
   return (
@@ -179,7 +177,6 @@ export default function EditorShell() {
           iframeRef={iframeRef}
           width={PREVIEW_WIDTHS[previewWidth]}
           previewWidth={previewWidth}
-          reloadKey={reloadKey}
         />
       </div>
     </div>
