@@ -47,7 +47,8 @@ store.post("/activate", async (c) => {
   await putStoreTheme(storeId, {
     theme_id,
     settings,
-    layout_overrides: {}, // clear overrides on theme switch
+    layout_overrides: {},
+    draft_layout_overrides: {},
   });
 
   return c.json({ theme_id, settings });

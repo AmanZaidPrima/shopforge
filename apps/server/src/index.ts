@@ -30,7 +30,7 @@ app.get("/render-sections", async (c) => {
 
   if (!sectionId) return c.json({ error: "sectionId required" }, 400);
 
-  const layout = await resolveLayout(store.id, routeKey, store.name);
+  const layout = await resolveLayout(store.id, routeKey, store.name, true); // editor always reads draft
   if (!layout) return c.json({ error: "Layout not found" }, 404);
 
   const section = layout.sections.find((s: Section) => s.id === sectionId);

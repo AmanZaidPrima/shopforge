@@ -37,5 +37,6 @@ export type Store = {
 export type StoreTheme = {
   theme_id: string;
   settings: ThemeSettingsValues;
-  layout_overrides: Record<string, PageLayout>;
+  layout_overrides: Record<string, PageLayout>;       // published — what shoppers see
+  draft_layout_overrides: Record<string, PageLayout>; // editor drafts — not yet live
 };

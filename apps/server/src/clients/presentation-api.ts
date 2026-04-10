@@ -14,8 +14,9 @@ export async function resolveStore(hostname: string): Promise<ResolveStoreResult
   return res.json() as Promise<ResolveStoreResult>;
 }
 
-export async function fetchLayout(storeId: string, routeKey: string): Promise<PageLayout | null> {
-  const res = await fetch(`${PRESENTATION_API}/stores/${storeId}/layouts/${routeKey}`);
+export async function fetchLayout(storeId: string, routeKey: string, draft = false): Promise<PageLayout | null> {
+  const qs = draft ? "?draft=1" : "";
+  const res = await fetch(`${PRESENTATION_API}/stores/${storeId}/layouts/${routeKey}${qs}`);
   if (!res.ok) return null;
   const { layout } = (await res.json()) as { layout: PageLayout };
   return layout;

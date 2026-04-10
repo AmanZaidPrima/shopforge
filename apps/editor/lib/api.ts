@@ -35,18 +35,27 @@ export async function fetchSectionSchema(themeId: string, sectionType: string): 
   return res.json() as Promise<SectionSchema>;
 }
 
+// Always fetch the draft so the editor shows in-progress work, not the live state.
 export async function fetchLayout(storeId: string, routeKey: string): Promise<PageLayout | null> {
-  const res = await fetch(`${API_BASE}/stores/${storeId}/layouts/${routeKey}`);
+  const res = await fetch(`${API_BASE}/stores/${storeId}/layouts/${routeKey}?draft=1`);
   if (!res.ok) return null;
   const data = await res.json() as { layout: PageLayout };
   return data.layout;
 }
 
+// Saves to draft only — does not affect the live storefront.
 export async function saveLayout(storeId: string, routeKey: string, layout: PageLayout): Promise<void> {
   await fetch(`${API_BASE}/stores/${storeId}/layouts/${routeKey}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(layout),
+  });
+}
+
+// Promotes the current draft to live.
+export async function publishLayout(storeId: string, routeKey: string): Promise<void> {
+  await fetch(`${API_BASE}/stores/${storeId}/layouts/${routeKey}/publish`, {
+    method: "POST",
   });
 }
 

@@ -5,7 +5,7 @@ import Sidebar from "./Sidebar";
 import PreviewFrame from "./PreviewFrame";
 import TopBar from "./TopBar";
 import type { SectionSchema } from "../../lib/api";
-import { fetchSectionSchema, fetchLayout, saveLayout, fetchRenderedSection } from "../../lib/api";
+import { fetchSectionSchema, fetchLayout, saveLayout, publishLayout, fetchRenderedSection } from "../../lib/api";
 
 const STOREFRONT_BASE = process.env.NEXT_PUBLIC_STOREFRONT_URL ?? "http://localhost:3000";
 const STORE_ID = "store-1";
@@ -140,11 +140,18 @@ export default function EditorShell() {
     }, SAVE_DEBOUNCE_MS);
   }, [setEdit, activePage.key]);
 
-  // Publish: reload the iframe to show the clean saved state
-  const handlePublish = useCallback(() => {
-    if (debounceTimer.current) { clearTimeout(debounceTimer.current); debounceTimer.current = null; }
+  // Publish: flush any pending draft save, promote draft → live, reload iframe
+  const handlePublish = useCallback(async () => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+      debounceTimer.current = null;
+    }
+    setSaving(true);
+    if (layoutRef.current) await saveLayout(STORE_ID, activePage.key, layoutRef.current);
+    await publishLayout(STORE_ID, activePage.key);
+    setSaving(false);
     setReloadKey((k) => k + 1);
-  }, []);
+  }, [activePage.key]);
 
   return (
     <div className="flex flex-col h-screen">

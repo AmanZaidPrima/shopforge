@@ -52,6 +52,7 @@ const storeThemes = new Map<string, StoreTheme>([
       theme_id: "dawn",
       settings: { brand_color: "#0f172a", font_family: "inter", border_radius: 8 },
       layout_overrides: {},
+      draft_layout_overrides: {},
     },
   ],
   [
@@ -60,6 +61,7 @@ const storeThemes = new Map<string, StoreTheme>([
       theme_id: "minimal",
       settings: { brand_color: "#6366f1", font_family: "dm-sans", border_radius: 12 },
       layout_overrides: {},
+      draft_layout_overrides: {},
     },
   ],
 ]);
@@ -72,14 +74,10 @@ export function putStoreTheme(storeId: string, data: StoreTheme): void {
   storeThemes.set(storeId, data);
 }
 
+// -- Published layouts (what shoppers see) --
+
 export function getLayoutOverride(storeId: string, routeKey: string): PageLayout | null {
   return storeThemes.get(storeId)?.layout_overrides[routeKey] ?? null;
-}
-
-export function putLayoutOverride(storeId: string, routeKey: string, layout: PageLayout): void {
-  const theme = storeThemes.get(storeId);
-  if (!theme) return;
-  storeThemes.set(storeId, { ...theme, layout_overrides: { ...theme.layout_overrides, [routeKey]: layout } });
 }
 
 export function deleteLayoutOverride(storeId: string, routeKey: string): void {
@@ -87,6 +85,28 @@ export function deleteLayoutOverride(storeId: string, routeKey: string): void {
   if (!theme) return;
   const { [routeKey]: _, ...rest } = theme.layout_overrides;
   storeThemes.set(storeId, { ...theme, layout_overrides: rest });
+}
+
+// -- Draft layouts (editor only, not visible to shoppers) --
+
+export function getDraftLayoutOverride(storeId: string, routeKey: string): PageLayout | null {
+  return storeThemes.get(storeId)?.draft_layout_overrides[routeKey] ?? null;
+}
+
+export function putDraftLayoutOverride(storeId: string, routeKey: string, layout: PageLayout): void {
+  const theme = storeThemes.get(storeId);
+  if (!theme) return;
+  storeThemes.set(storeId, { ...theme, draft_layout_overrides: { ...theme.draft_layout_overrides, [routeKey]: layout } });
+}
+
+// Promotes draft → live. Returns false if no draft exists for this route.
+export function publishDraftLayout(storeId: string, routeKey: string): boolean {
+  const theme = storeThemes.get(storeId);
+  if (!theme) return false;
+  const draft = theme.draft_layout_overrides[routeKey];
+  if (!draft) return false;
+  storeThemes.set(storeId, { ...theme, layout_overrides: { ...theme.layout_overrides, [routeKey]: draft } });
+  return true;
 }
 
 // -- Template store (in-memory; Phase 2: KV `themes:{theme_id}:sections:{type}`) --
