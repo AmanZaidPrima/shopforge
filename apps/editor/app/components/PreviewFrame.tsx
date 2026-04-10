@@ -19,24 +19,27 @@ export default function PreviewFrame({ src, iframeRef, width, previewWidth }: Pr
   const displayUrl = src.replace("?editor=1", "");
 
   return (
-    <div className="flex-1 flex flex-col bg-[#f3f4f6] min-w-0">
+    <div className="flex-1 flex flex-col bg-gray-100 min-w-0">
       {/* URL bar */}
-      <div className="h-9 bg-white border-b border-[#e5e7eb] flex items-center justify-between px-4 shrink-0">
-        <span className="text-[11px] text-[#6b7280] font-mono truncate">{displayUrl}</span>
-        <span className="text-[11px] text-[#16a34a] font-medium shrink-0 ml-4">● Live</span>
+      <div className="h-10 bg-white border-b border-gray-200 flex items-center justify-between px-5 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="shrink-0 w-2 h-2 rounded-full bg-green-500" />
+          <span className="text-[11px] text-gray-500 font-mono truncate">{displayUrl}</span>
+        </div>
+        <span className="text-[11px] text-gray-400 font-medium shrink-0 ml-4">Live preview</span>
       </div>
 
       {/* Canvas */}
-      <div className={`flex-1 flex overflow-auto ${isConstrained ? "justify-center items-start p-6" : "items-stretch p-3"}`}>
+      <div className={`flex-1 flex overflow-auto ${isConstrained ? "justify-center items-start p-8" : "items-stretch p-4"}`}>
         <div
           className={`relative bg-white overflow-hidden transition-[width] duration-200 ease-in-out ${
             isConstrained
-              ? "rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-[#e5e7eb]"
-              : "rounded-lg border border-[#d1d5db] w-full"
+              ? "rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.10)] border border-gray-200"
+              : "rounded-xl border border-gray-200 w-full"
           }`}
           style={{
             width: isConstrained ? width : "100%",
-            height: isConstrained ? "calc(100vh - 120px)" : "100%",
+            height: isConstrained ? "calc(100vh - 130px)" : "100%",
           }}
         >
           {loading && (
