@@ -125,18 +125,7 @@ export function getTemplateUpdatedAt(themeId: string, type: string): Date | null
   return templateStore.get(`${themeId}:${type}`)?.updatedAt ?? null;
 }
 
-// -- Section schema (read from disk; same lifecycle as templates) --
-
-const sectionSchemaCache = new Map<string, unknown>();
-
 export async function getSectionSchema(themeId: string, type: string): Promise<unknown | null> {
-  const key = `${themeId}:${type}`;
-  if (sectionSchemaCache.has(key)) return sectionSchemaCache.get(key)!;
-
-  const file = Bun.file(`${THEMES_PATH}/${themeId}/sections/${type}.schema.json`);
-  if (!(await file.exists())) return null;
-
-  const schema = await file.json();
-  sectionSchemaCache.set(key, schema);
-  return schema;
+  const themeSchema = await getThemeSchema(themeId);
+  return themeSchema?.section_schemas?.[type] ?? null;
 }

@@ -16,8 +16,14 @@ export type ThemeSettingsValues = {
   border_radius: number;
 };
 
+type SchemaSetting = {
+  type: string; id: string; label: string;
+  default?: unknown; min?: number; max?: number; step?: number;
+};
+
 export type ThemeSchema = {
   settings_schema: Record<string, { type: string; default: unknown; label: string; options?: string[]; min?: number; max?: number }>;
+  section_schemas: Record<string, { name: string; description?: string; settings: SchemaSetting[] }>;
   default_layouts: Record<string, PageLayout>;
 };
 

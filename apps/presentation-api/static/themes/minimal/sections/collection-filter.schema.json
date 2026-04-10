@@ -1,7 +1,0 @@
-{
-  "name": "Collection Filter",
-  "description": "Searchable, sortable product grid for a collection page.",
-  "settings": [
-    { "type": "range", "id": "limit", "label": "Products shown", "min": 4, "max": 24, "step": 4, "default": 12 }
-  ]
-}

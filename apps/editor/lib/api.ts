@@ -15,7 +15,7 @@ export interface SectionSetting {
 
 export interface SectionSchema {
   name: string;
-  description: string;
+  description?: string;
   settings: SectionSetting[];
 }
 
@@ -29,10 +29,7 @@ export interface PageLayout {
   }>;
 }
 
-export async function fetchSectionSchema(
-  themeId: string,
-  sectionType: string
-): Promise<SectionSchema | null> {
+export async function fetchSectionSchema(themeId: string, sectionType: string): Promise<SectionSchema | null> {
   const res = await fetch(`${API_BASE}/themes/${themeId}/sections/${sectionType}/schema`);
   if (!res.ok) return null;
   return res.json() as Promise<SectionSchema>;
@@ -45,27 +42,19 @@ export async function fetchLayout(storeId: string, routeKey: string): Promise<Pa
   return data.layout;
 }
 
-// Calls server's POST /preview-section — renders the section with the given props
-// without saving to layout. Returns the wrapped HTML string for iframe injection.
-export async function previewSection(
-  sectionId: string,
-  sectionType: string,
-  props: Record<string, unknown>
-): Promise<string | null> {
-  const res = await fetch(`${STOREFRONT_BASE}/preview-section`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sectionId, sectionType, props }),
-  });
-  if (!res.ok) return null;
-  const { html } = await res.json() as { sectionId: string; html: string };
-  return html;
-}
-
 export async function saveLayout(storeId: string, routeKey: string, layout: PageLayout): Promise<void> {
   await fetch(`${API_BASE}/stores/${storeId}/layouts/${routeKey}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(layout),
   });
+}
+
+// Fetches fresh rendered HTML for a single section from the server,
+// using the already-saved layout as source of truth.
+export async function fetchRenderedSection(routeKey: string, sectionId: string): Promise<string | null> {
+  const res = await fetch(`${STOREFRONT_BASE}/render-sections?sectionId=${encodeURIComponent(sectionId)}&routeKey=${encodeURIComponent(routeKey)}`);
+  if (!res.ok) return null;
+  const data = await res.json() as Record<string, string>;
+  return data[sectionId] ?? null;
 }

@@ -7,45 +7,43 @@ import { renderPage } from "./renderer/page.ts";
 import { eta, getSectionFn } from "./renderer/eta.ts";
 import { wrapSection } from "./renderer/sections.ts";
 import { resolveSectionData } from "./lib/section-data.ts";
+import { resolveLayout } from "./lib/layout-resolver.ts";
+import type { Section } from "./types.ts";
 
 const app = new Hono<AppEnv>();
 
-// Allow editor to call preview endpoint
-app.use("/preview-section", cors({ origin: "http://localhost:3003" }));
+// Allow editor to call section rendering endpoint
+app.use("/render-sections", cors({ origin: "http://localhost:3003" }));
 
 // Middleware
 app.use("*", tenantMiddleware);
 app.use("*", htmxMiddleware);
 
-// Section Rendering API — used by editor for live preview while typing.
-// POST /preview-section  { sectionId, sectionType, props }
-// → renders just that section with caller-supplied props (not saved to layout)
-// → returns { sectionId, html } so the editor can patch the iframe DOM via postMessage
-app.post("/preview-section", async (c) => {
+// Section Rendering API — used by editor after auto-saving a prop change.
+// GET /render-sections?sectionId=hero-1&routeKey=home
+// → reads the saved layout, renders that section, returns { [sectionId]: html }
+app.get("/render-sections", async (c) => {
   const store = c.get("store");
   const theme = c.get("themeSettings");
-  const { sectionId, sectionType, props } = await c.req.json<{
-    sectionId: string;
-    sectionType: string;
-    props: Record<string, unknown>;
-  }>();
+  const sectionId = c.req.query("sectionId");
+  const routeKey = c.req.query("routeKey") ?? "home";
 
-  const ctx: RenderContext = {
-    store,
-    theme,
-    routeParams: {},
-    editorMode: true,
-  };
+  if (!sectionId) return c.json({ error: "sectionId required" }, 400);
 
+  const layout = await resolveLayout(store.id, routeKey, store.name);
+  if (!layout) return c.json({ error: "Layout not found" }, 404);
+
+  const section = layout.sections.find((s: Section) => s.id === sectionId);
+  if (!section) return c.json({ error: "Section not found" }, 404);
+
+  const ctx: RenderContext = { store, theme, routeParams: {}, editorMode: true };
   const [fn, data] = await Promise.all([
-    getSectionFn(theme.id, sectionType),
-    resolveSectionData(sectionType, props, ctx),
+    getSectionFn(theme.id, section.type),
+    resolveSectionData(section.type, section.props, ctx),
   ]);
 
-  const html = fn({ props, data, store, theme, editorMode: true }, eta);
-  const wrapped = wrapSection(html, sectionId, sectionType, true);
-
-  return c.json({ sectionId, html: wrapped });
+  const html = fn({ props: section.props, data, store, theme, editorMode: true }, eta);
+  return c.json({ [sectionId]: wrapSection(html, sectionId, section.type, true) });
 });
 
 // Internal docs

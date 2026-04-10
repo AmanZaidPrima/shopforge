@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import type { LayoutSection, SelectedSection } from "./EditorShell";
-import type { SectionSetting, SectionSettingType } from "../../lib/api";
+import type { SectionSetting } from "../../lib/api";
 
 interface SidebarProps {
   sections: LayoutSection[];
@@ -10,7 +10,7 @@ interface SidebarProps {
   onSectionSelect: (sectionId: string, sectionType: string) => void;
   selected: SelectedSection | null;
   onDeselect: () => void;
-  onPropChange: (settingId: string, value: unknown, settingType: SectionSettingType) => void;
+  onPropChange: (settingId: string, value: unknown) => void;
 }
 
 // Converts "hero-banner" → "Hero Banner"
@@ -128,7 +128,7 @@ function SectionList({ sections, selectedId, onSectionSelect }: {
 function SettingsPanel({ selected, onDeselect, onPropChange }: {
   selected: SelectedSection;
   onDeselect: () => void;
-  onPropChange: (id: string, value: unknown, settingType: SectionSettingType) => void;
+  onPropChange: (id: string, value: unknown) => void;
 }) {
   const { schema, props } = selected;
 
@@ -172,19 +172,19 @@ function SettingsPanel({ selected, onDeselect, onPropChange }: {
 function SettingField({ setting, value, onPropChange }: {
   setting: SectionSetting;
   value: unknown;
-  onPropChange: (id: string, value: unknown, settingType: SectionSettingType) => void;
+  onPropChange: (id: string, value: unknown) => void;
 }) {
   const labelClass = "block text-[12px] font-semibold text-[#6b7280] mb-1";
   const inputClass =
     "w-full px-3 py-2 rounded-md border border-[#d1d5db] text-[13px] text-[#111827] outline-none focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6] transition-colors";
 
   const handleRangeChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => onPropChange(setting.id, Number(e.target.value), setting.type),
-    [setting.id, setting.type, onPropChange]
+    (e: React.ChangeEvent<HTMLInputElement>) => onPropChange(setting.id, Number(e.target.value)),
+    [setting.id, onPropChange]
   );
   const handleTextChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => onPropChange(setting.id, e.target.value, setting.type),
-    [setting.id, setting.type, onPropChange]
+    (e: React.ChangeEvent<HTMLInputElement>) => onPropChange(setting.id, e.target.value),
+    [setting.id, onPropChange]
   );
 
   if (setting.type === "range") {

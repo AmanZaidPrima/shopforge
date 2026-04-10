@@ -4,14 +4,13 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import PreviewFrame from "./PreviewFrame";
 import TopBar from "./TopBar";
-import type { SectionSchema, SectionSettingType } from "../../lib/api";
-import { fetchSectionSchema, fetchLayout, saveLayout, previewSection } from "../../lib/api";
+import type { SectionSchema } from "../../lib/api";
+import { fetchSectionSchema, fetchLayout, saveLayout, fetchRenderedSection } from "../../lib/api";
 
-const CLIENT_PATCH_TYPES: SectionSettingType[] = ["text", "url"];
 const STOREFRONT_BASE = process.env.NEXT_PUBLIC_STOREFRONT_URL ?? "http://localhost:3000";
 const STORE_ID = "store-1";
 const THEME_ID = "dawn";
-const PREVIEW_DEBOUNCE_MS = 400;
+const SAVE_DEBOUNCE_MS = 400;
 
 export type PageRoute =
   | { key: "home"; label: "Home"; path: "/" }
@@ -74,7 +73,7 @@ export default function EditorShell() {
   }, [activePage.key]);
 
   const selectSection = useCallback(async (sectionId: string, sectionType: string) => {
-    iframeRef.current?.contentWindow?.postMessage({ type: "sf:section:select", sectionId }, "*");
+    iframeRef.current?.contentWindow?.postMessage({ type: "sf:section:select", sectionId }, STOREFRONT_BASE);
     const [schema, layout] = await Promise.all([
       fetchSectionSchema(THEME_ID, sectionType),
       layoutRef.current ? Promise.resolve(layoutRef.current) : fetchLayout(STORE_ID, activePage.key),
@@ -85,10 +84,10 @@ export default function EditorShell() {
   }, [activePage.key, setEdit]);
 
   useEffect(() => {
-    async function onMessage(e: MessageEvent) {
+    function onMessage(e: MessageEvent) {
       if (!e.data || e.data.type !== "sf:section:click") return;
       const { sectionId, sectionType } = e.data as { sectionId: string; sectionType: string };
-      await selectSection(sectionId, sectionType);
+      selectSection(sectionId, sectionType);
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
@@ -97,71 +96,55 @@ export default function EditorShell() {
   const handlePageChange = useCallback((page: PageRoute) => {
     setActivePage(page);
     setEdit(null);
-    iframeRef.current?.contentWindow?.postMessage({ type: "sf:deselect" }, "*");
+    iframeRef.current?.contentWindow?.postMessage({ type: "sf:deselect" }, STOREFRONT_BASE);
   }, [setEdit]);
 
   const handleDeselect = useCallback(() => {
     setEdit(null);
-    iframeRef.current?.contentWindow?.postMessage({ type: "sf:deselect" }, "*");
+    iframeRef.current?.contentWindow?.postMessage({ type: "sf:deselect" }, STOREFRONT_BASE);
   }, [setEdit]);
 
-  const handlePropChange = useCallback((settingId: string, value: unknown, settingType: SectionSettingType) => {
+  // Single update path for all setting types:
+  // 1. Merge prop into local state and layout ref immediately
+  // 2. Debounce: save layout → fetch re-rendered section → patch iframe
+  const handlePropChange = useCallback((settingId: string, value: unknown) => {
     const prev = editRef.current;
-    if (!prev) return;
+    if (!prev || !layoutRef.current) return;
 
-    const next = { ...prev, props: { ...prev.props, [settingId]: value } };
-    setEdit(next);
+    const nextProps = { ...prev.props, [settingId]: value };
+    setEdit({ ...prev, props: nextProps });
 
-    if (CLIENT_PATCH_TYPES.includes(settingType)) {
-      iframeRef.current?.contentWindow?.postMessage(
-        { type: "sf:setting:patch", sectionId: prev.sectionId, settingId, settingType, value },
-        "*"
-      );
-    } else {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      debounceTimer.current = setTimeout(async () => {
-        const snap = editRef.current;
-        if (!snap) return;
-
-        const html = await previewSection(snap.sectionId, snap.sectionType, snap.props);
-        if (!html) return;
-
-        iframeRef.current?.contentWindow?.postMessage(
-          { type: "sf:section:patch", sectionId: snap.sectionId, html },
-          "*"
-        );
-
-        const current = editRef.current;
-        if (!current || current.sectionId !== snap.sectionId || !current.schema) return;
-        for (const setting of current.schema.settings) {
-          if (!CLIENT_PATCH_TYPES.includes(setting.type)) continue;
-          iframeRef.current?.contentWindow?.postMessage(
-            { type: "sf:setting:patch", sectionId: current.sectionId, settingId: setting.id, settingType: setting.type, value: current.props[setting.id] },
-            "*"
-          );
-        }
-      }, PREVIEW_DEBOUNCE_MS);
-    }
-  }, [setEdit]);
-
-  const handlePublish = useCallback(async () => {
-    const current = editRef.current;
-    if (!current || !layoutRef.current) return;
-    if (debounceTimer.current) { clearTimeout(debounceTimer.current); debounceTimer.current = null; }
-    setSaving(true);
-
-    const updatedLayout = {
+    layoutRef.current = {
       ...layoutRef.current,
       sections: layoutRef.current.sections.map((s) =>
-        s.id === current.sectionId ? { ...s, props: current.props } : s
+        s.id === prev.sectionId ? { ...s, props: nextProps } : s
       ),
     };
 
-    await saveLayout(STORE_ID, activePage.key, updatedLayout);
-    layoutRef.current = updatedLayout;
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(async () => {
+      const snap = editRef.current;
+      const layout = layoutRef.current;
+      if (!snap || !layout) return;
+
+      setSaving(true);
+      await saveLayout(STORE_ID, activePage.key, layout);
+      const html = await fetchRenderedSection(activePage.key, snap.sectionId);
+      setSaving(false);
+
+      if (!html) return;
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: "sf:section:patch", sectionId: snap.sectionId, html },
+        STOREFRONT_BASE
+      );
+    }, SAVE_DEBOUNCE_MS);
+  }, [setEdit, activePage.key]);
+
+  // Publish: reload the iframe to show the clean saved state
+  const handlePublish = useCallback(() => {
+    if (debounceTimer.current) { clearTimeout(debounceTimer.current); debounceTimer.current = null; }
     setReloadKey((k) => k + 1);
-    setSaving(false);
-  }, [activePage.key]);
+  }, []);
 
   return (
     <div className="flex flex-col h-screen">

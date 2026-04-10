@@ -89,20 +89,6 @@ export function shellBottom(editorMode = false): string {
             }
           }
         }
-        if (e.data.type === 'sf:setting:patch') {
-          var section = document.querySelector('[data-section-id="' + e.data.sectionId + '"]');
-          if (!section) return;
-          var el = section.querySelector('[data-setting-id="' + e.data.settingId + '"]');
-          if (!el) return;
-          el.textContent = e.data.value;
-          // If this element binds a sibling href setting, update that too
-          var hrefId = el.getAttribute('data-setting-href');
-          if (hrefId) {
-            var hrefEl = section.querySelector('[data-setting-id="' + hrefId + '"]');
-            if (hrefEl) hrefEl.setAttribute('href', e.data.value);
-            else el.setAttribute('href', e.data.value);
-          }
-        }
       });
 
       document.body.addEventListener('htmx:afterSwap', function () {
