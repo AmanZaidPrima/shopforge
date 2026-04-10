@@ -84,13 +84,23 @@ export default function TopBar({
   return (
     <header className="h-14 bg-white border-b border-gray-200 flex items-center px-4 gap-4 shrink-0">
 
-      {/* Left — logo */}
-      <div className="flex items-center gap-2.5 shrink-0">
-        <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
-          <span className="text-white text-[11px] font-bold tracking-tight">SF</span>
+      {/* Left — wordmark + context */}
+      <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1.5">
+          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-sm">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+              <rect x="2" y="2" width="5.5" height="5.5" rx="1" fill="white" fillOpacity="0.9"/>
+              <rect x="8.5" y="2" width="5.5" height="5.5" rx="1" fill="white" fillOpacity="0.6"/>
+              <rect x="2" y="8.5" width="5.5" height="5.5" rx="1" fill="white" fillOpacity="0.6"/>
+              <rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1" fill="white" fillOpacity="0.3"/>
+            </svg>
+          </div>
+          <span className="text-[13px] font-semibold text-gray-900 tracking-tight">ShopForge</span>
         </div>
-        <span className="text-gray-300 select-none">/</span>
-        <span className="text-[13px] font-medium text-gray-500">Editor</span>
+        <svg className="text-gray-300 mx-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+        <span className="text-[13px] text-gray-500 font-medium">Editor</span>
       </div>
 
       {/* Center — page dropdown + viewport toggles */}

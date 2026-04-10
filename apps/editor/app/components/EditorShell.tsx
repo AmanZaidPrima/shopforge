@@ -5,7 +5,7 @@ import Sidebar from "./Sidebar";
 import PreviewFrame from "./PreviewFrame";
 import TopBar from "./TopBar";
 import type { SectionSchema } from "../../lib/api";
-import { fetchSectionSchema, fetchLayout, saveLayout, publishLayout, fetchRenderedSection } from "../../lib/api";
+import { fetchSectionSchema, fetchLayout, saveLayout, publishLayout, fetchRenderedSection, fetchSectionTemplate, saveSectionTemplate } from "../../lib/api";
 
 const STOREFRONT_BASE = process.env.NEXT_PUBLIC_STOREFRONT_URL ?? "http://localhost:3000";
 const STORE_ID = "store-1";
@@ -51,6 +51,7 @@ export default function EditorShell() {
   const [selected, setSelected] = useState<SelectedSection | null>(null);
   const [saving, setSaving] = useState(false);
   const [layoutSections, setLayoutSections] = useState<LayoutSection[]>([]);
+  const [templateContent, setTemplateContent] = useState<string | null>(null);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const editRef = useRef<SelectedSection | null>(null);
@@ -73,13 +74,16 @@ export default function EditorShell() {
 
   const selectSection = useCallback(async (sectionId: string, sectionType: string) => {
     iframeRef.current?.contentWindow?.postMessage({ type: "sf:section:select", sectionId }, STOREFRONT_BASE);
-    const [schema, layout] = await Promise.all([
+    setTemplateContent(null);
+    const [schema, layout, template] = await Promise.all([
       fetchSectionSchema(THEME_ID, sectionType),
       layoutRef.current ? Promise.resolve(layoutRef.current) : fetchLayout(STORE_ID, activePage.key),
+      fetchSectionTemplate(THEME_ID, sectionType),
     ]);
     layoutRef.current = layout;
     const section = layout?.sections.find((s) => s.id === sectionId);
     setEdit({ sectionId, sectionType, schema, props: section?.props ?? {} });
+    setTemplateContent(template);
   }, [activePage.key, setEdit]);
 
   useEffect(() => {
@@ -139,6 +143,25 @@ export default function EditorShell() {
     }, SAVE_DEBOUNCE_MS);
   }, [setEdit, activePage.key]);
 
+  const handleTemplateSave = useCallback(async (content: string): Promise<boolean> => {
+    const snap = editRef.current;
+    if (!snap) return false;
+    setSaving(true);
+    const ok = await saveSectionTemplate(THEME_ID, snap.sectionType, content);
+    if (ok) {
+      setTemplateContent(content);
+      const html = await fetchRenderedSection(activePage.key, snap.sectionId);
+      if (html) {
+        iframeRef.current?.contentWindow?.postMessage(
+          { type: "sf:section:patch", sectionId: snap.sectionId, html },
+          STOREFRONT_BASE
+        );
+      }
+    }
+    setSaving(false);
+    return ok;
+  }, [activePage.key]);
+
   // Publish: flush any pending draft save, promote draft → live, reload iframe
   const handlePublish = useCallback(async () => {
     if (debounceTimer.current) {
@@ -171,6 +194,8 @@ export default function EditorShell() {
           selected={selected}
           onDeselect={handleDeselect}
           onPropChange={handlePropChange}
+          templateContent={templateContent}
+          onTemplateSave={handleTemplateSave}
         />
         <PreviewFrame
           src={iframeSrc}

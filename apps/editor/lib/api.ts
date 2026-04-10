@@ -59,6 +59,21 @@ export async function publishLayout(storeId: string, routeKey: string): Promise<
   });
 }
 
+export async function fetchSectionTemplate(themeId: string, sectionType: string): Promise<string | null> {
+  const res = await fetch(`${API_BASE}/themes/${themeId}/sections/${sectionType}`);
+  if (!res.ok) return null;
+  return res.text();
+}
+
+export async function saveSectionTemplate(themeId: string, sectionType: string, content: string): Promise<boolean> {
+  const res = await fetch(`${API_BASE}/themes/${themeId}/sections/${sectionType}`, {
+    method: "PUT",
+    headers: { "Content-Type": "text/plain" },
+    body: content,
+  });
+  return res.ok;
+}
+
 // Fetches fresh rendered HTML for a single section from the server,
 // using the already-saved layout as source of truth.
 export async function fetchRenderedSection(routeKey: string, sectionId: string): Promise<string | null> {
